@@ -47,12 +47,14 @@ class HomeScreenState extends State<HomeScreen> {
       const ProductManagementScreen(),
       const MoreOptionsScreen(),
     ];
-    _refreshOption();
+    didChangeDependencies();
 
   }
 
   Future<void> _refreshOption() async {
+    final appData = Provider.of<AppData>(context, listen: false);
     Future.microtask(() async {
+      appData.refreshDataService(context);
       final activityService = Provider.of<ActivityService>(context, listen: false);
       await activityService.fetchActivities();
     });
@@ -61,6 +63,7 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _refreshOption();
   }
 
   Widget _buildHomePage() {
@@ -80,6 +83,7 @@ class HomeScreenState extends State<HomeScreen> {
           ...internalOrders.map((o) => InternalOrderRecord(o)),
           ...externalOrders.map((o) => ExternalOrderRecord(o)),
         ];
+        
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -186,6 +190,7 @@ class HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
+                      
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton.icon(

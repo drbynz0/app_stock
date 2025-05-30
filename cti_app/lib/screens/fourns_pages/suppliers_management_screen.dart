@@ -1,12 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/supplier_controller.dart';
+import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/supplier.dart';
 import 'add_supplier_screen.dart' as add_screen;
 import 'edit_supplier_screen.dart';
 import 'delete_supplier_screen.dart';
-import 'supplier_details_screen.dart'; // Import de la page des détails du fournisseur
+import 'supplier_details_screen.dart';
 
 class SuppliersManagementScreen extends StatefulWidget {
   const SuppliersManagementScreen({super.key});
@@ -19,27 +22,44 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
   List<Supplier> _suppliers = [];
   int _currentPage = 1;
   final int _itemsPerPage = 5;
-    String _searchQuery = '';
+  String _searchQuery = '';
+  
+  Map<String, dynamic>? myPrivileges = {};
+  Map<String, dynamic>? userData = {};
 
-
-    @override
+  @override
   void initState() {
     super.initState();
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-    final availableSuppliers = await SupplierController.getSuppliers();
-    setState(() {
-      _suppliers = availableSuppliers;
+    final appData = Provider.of<AppData>(context, listen: false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
     });
+
+    if (appData.suppliers.isEmpty) {
+      await appData.fetchSuppliers();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
+    if (mounted) {
+      setState(() {
+        _suppliers = appData.suppliers;
+      });
+    }
   }
 
   List<Supplier> get filteredSuppliers {
     return _suppliers.where((supplier) {
       return supplier.nameRespo.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        supplier.nameEnt.toLowerCase().contains(_searchQuery.toLowerCase());
+          supplier.nameEnt.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -50,53 +70,49 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
     return filteredSuppliers.sublist(startIndex, endIndex);
   }
 
-  void _deleteSupplier(int? id) async {
-    // Afficher un indicateur de chargement
+  Future<void> _deleteSupplier(int? id) async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+    
     await SupplierController.deleteSupplier(id);
-    _refreshOption();
-    Navigator.pop(context);
+    await Provider.of<AppData>(context, listen: false).fetchSuppliers();
+    await _refreshOption();
+    
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
+    //final appData = Provider.of<AppData>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Gestion des Fournisseurs',
-          style: TextStyle(color: Colors.white), // Texte en blanc
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF003366),
-        iconTheme: const IconThemeData(color: Colors.white), // Icônes en blanc
-        elevation: 4, // Ombre sous l'AppBar
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 4,
       ),
       body: Column(
         children: [
           const SizedBox(height: 10),
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
-              color: Colors.white,
               borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ],
             ),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Rechercher un client...',
+                hintText: 'Rechercher un fournisseur...',
                 hintStyle: const TextStyle(color: Colors.grey),
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onChanged: (value) {
@@ -115,19 +131,17 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
                 itemBuilder: (context, index) {
                   final supplier = paginatedSuppliers[index];
                   return Card(
-                    color: const Color.fromARGB(255, 194, 224, 240),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16), // Coins arrondis
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 8.0), // Espacement entre les cartes
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: InkWell(
-                      onTap: () => _navigateToDetailsScreen(context, supplier), // Lien vers les détails
+                      onTap: () => _navigateToDetailsScreen(context, supplier),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            // Badge avec les initiales du fournisseur
                             CircleAvatar(
                               radius: 30,
                               backgroundColor: const Color(0xFF004A99),
@@ -141,47 +155,50 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
                               ),
                             ),
                             const SizedBox(width: 16),
-                            // Informations du fournisseur
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     supplier.nameRespo,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: Colors.black, // Couleur du titre en noir
+                                      color: theme.nameColor,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     supplier.nameEnt,
-                                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                    style: TextStyle(color: theme.secondaryTextColor, fontSize: 14),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     supplier.phone,
-                                    style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                                    style: TextStyle(color: theme.secondaryTextColor, fontSize: 14),
                                   ),
                                 ],
                               ),
                             ),
-                            // Boutons d'action
-                            Column(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Color(0xFF004A99)),
-                                  tooltip: 'Modifier',
-                                  onPressed: () => _showEditSupplierDialog(supplier),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  tooltip: 'Supprimer',
-                                  onPressed: () => _showDeleteDialog(context, supplier),
-                                ),
-                              ],
-                            ),
+                            if ((userData?['is_staff'] ?? false) || 
+                                (myPrivileges?['edit_supplier'] ?? false) || 
+                                (myPrivileges?['delete_supplier'] ?? false))
+                              Column(
+                                children: [
+                                  if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_supplier'] ?? false))
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      tooltip: 'Modifier',
+                                      onPressed: () => _showEditSupplierDialog(supplier),
+                                    ),
+                                  if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_supplier'] ?? false))
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      tooltip: 'Supprimer',
+                                      onPressed: () => _showDeleteDialog(context, supplier),
+                                    ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
@@ -191,7 +208,6 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
               ),
             ),
           ),
-          // Pagination
           Container(
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
@@ -201,7 +217,7 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${_suppliers.length} fournisseurs',
+                  '${filteredSuppliers.length} fournisseurs',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
                 Row(
@@ -213,11 +229,11 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
                           : null,
                     ),
                     Text(
-                      'Page $_currentPage/${(_suppliers.length / _itemsPerPage).ceil()}',
+                      'Page $_currentPage/${(filteredSuppliers.length / _itemsPerPage).ceil()}',
                     ),
                     IconButton(
                       icon: const Icon(Icons.arrow_forward),
-                      onPressed: _currentPage < (_suppliers.length / _itemsPerPage).ceil()
+                      onPressed: _currentPage < (filteredSuppliers.length / _itemsPerPage).ceil()
                           ? () => setState(() => _currentPage++)
                           : null,
                     ),
@@ -228,31 +244,39 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
           ),
         ],
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 55.0), // Ajustez la valeur pour déplacer le bouton vers le haut
-        child: FloatingActionButton(
-          onPressed: () => _showAddSupplierDialog(),
-          backgroundColor: const Color(0xFF004A99),
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked, // Positionne le bouton à droite
+      floatingActionButton: ((userData?['is_staff'] ?? false) || (myPrivileges?['add_supplier'] ?? false))
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 55.0),
+              child: FloatingActionButton(
+                onPressed: () => _showAddSupplierDialog(),
+                backgroundColor: const Color(0xFF004A99),
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
-
 
   void _showAddSupplierDialog() {
     showDialog(
       context: context,
       builder: (context) => add_screen.AddSupplierScreen(
-        onAddSupplier: (newSupplier) {
-          _refreshOption();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${newSupplier.nameRespo} est Ajouté avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.green,),
-          );
-          Navigator.pop(context);
+        onAddSupplier: (newSupplier) async {
+          await Provider.of<AppData>(context, listen: false).fetchSuppliers();
+          await _refreshOption();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${newSupplier.nameRespo} est Ajouté avec succès'), 
+                duration: const Duration(seconds: 3), 
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context);
+          }
         },
-        
       ),
     );
   }
@@ -262,12 +286,20 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
       context: context,
       builder: (context) => EditSupplierScreen(
         supplier: supplier,
-        onEditSupplier: (updatedSupplier) {
-          _refreshOption();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${updatedSupplier.nameRespo} est mise à jour avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.green,),
-          );
-          Navigator.pop(context);
+        onEditSupplier: (updatedSupplier) async {
+          await Provider.of<AppData>(context, listen: false).fetchSuppliers();
+          await _refreshOption();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${updatedSupplier.nameRespo} est mise à jour avec succès'), 
+                duration: const Duration(seconds: 3), 
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context);
+          }
         },
       ),
     );

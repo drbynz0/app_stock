@@ -25,12 +25,17 @@ SECRET_KEY = 'django-insecure-+5@g@-q@)ogjt7nr^9sg+981op6mnbb3ajiw(#&39j@*t0s2*d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nizarsoilih@gmail.com'
+EMAIL_HOST_PASSWORD = 'gnyabzbxdobcultd'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,12 +55,14 @@ INSTALLED_APPS = [
     'suppliers',
     'delivery_notes',
     'historical',
+    'reset_password',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -67,7 +74,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,6 +87,21 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'cti_app_dj.urls'
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+     "http://localhost:3000",
+     "http://127.0.0.1:8000",
+     " https://3f4a-45-218-97-102.ngrok-free.app",
+     "https://optionally-willing-raven.ngrok-free.app"
+ ]
+
+ALLOWED_HOSTS = [
+    '3f4a-45-218-97-102.ngrok-free.app',
+    'optionally-willing-raven.ngrok-free.app',
+    '127.0.0.1',
+]
 
 TEMPLATES = [
     {

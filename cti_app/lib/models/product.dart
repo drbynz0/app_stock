@@ -82,6 +82,42 @@ class Product {
     };
   }
 
+  Product copyWith({
+    int? id,
+    String? name,
+    int? variants,
+    String? marque,
+    String? code,
+    Category? category,
+    int? stock,
+    bool? available,
+    double? price,
+    double? promoPrice,
+    String? description,
+    bool? onPromo,
+    List<String>? images,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    }) {
+      return Product(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        variants: variants ?? this.variants,
+        marque: marque ?? this.marque,
+        code: code ?? this.code,
+        category: category ?? this.category,
+        stock: stock ?? this.stock,
+        available: available ?? this.available,
+        price: price ?? this.price,
+        promoPrice: promoPrice ?? this.promoPrice,
+        description: description ?? this.description,
+        onPromo: onPromo ?? this.onPromo,
+        images: images ?? this.images,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  }
+
     static Product empty() {
     return Product(
       code: '',

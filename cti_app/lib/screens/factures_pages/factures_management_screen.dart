@@ -13,16 +13,14 @@ class FacturesManagementScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Gestion des Factures', style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: const Color(0xFF003366),
           bottom: const TabBar(
-            unselectedLabelColor: Color.fromARGB(179, 132, 134, 134),
-            labelColor: Color.fromARGB(255, 170, 225, 243),
+            unselectedLabelColor: Colors.grey,
+            labelColor: Colors.blue,
             tabs: [
               Tab(text: 'Commandes Internes', icon: Icon(Icons.store)),
               Tab(text: 'Commandes Externes', icon: Icon(Icons.local_shipping)),
             ],
-            indicatorColor: Colors.white,
-            labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            indicatorColor: Colors.blue,
           ),
         ),
         body: const TabBarView(

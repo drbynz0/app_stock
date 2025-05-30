@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/services/activity_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
@@ -30,7 +31,10 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
   String _searchQuery = '';
   int _currentPage = 1;
   final int _itemsPerPage = 5;
-  TypeOrder? _selectedOrderType; // Nouveau: pour le filtre par type
+  TypeOrder? _selectedOrderType;
+  
+  Map<String, dynamic>? myPrivileges = {};
+  Map<String, dynamic>? userData = {};
 
   @override
   void initState() {
@@ -38,13 +42,27 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir les commandes
   Future<void> _refreshOption() async {
-    final updatedOrder = await InternalOrdersController.fetchOrders();
+    final appData = Provider.of<AppData>(context, listen: false);
 
-    setState(() {
-      _orders = updatedOrder;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
     });
+
+    if (appData.internalOrders.isEmpty) {
+      await appData.fetchInternalOrders();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
+    if (mounted) {
+      setState(() {
+        _orders = appData.internalOrders;
+      });
+    }
   }
 
   List<InternalOrder> get _filteredOrders {
@@ -52,7 +70,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
       final matchesSearch = order.clientName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           order.orderNum.toLowerCase().contains(_searchQuery.toLowerCase());
       
-      // Nouveau: Filtre par type de commande si sélectionné
       final matchesType = _selectedOrderType == null || order.typeOrder == _selectedOrderType;
       
       return matchesSearch && matchesType;
@@ -69,6 +86,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
+    final appData = Provider.of<AppData>(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -84,7 +103,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            // ignore: deprecated_member_use
                             color: theme.shadowColor,
                             spreadRadius: 2,
                             blurRadius: 5,
@@ -98,7 +116,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                           hintText: 'Rechercher des commandes...',
                           hintStyle: const TextStyle(color: Colors.grey),
                           prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                          border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         onChanged: (value) {
@@ -110,10 +127,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Ligne avec le sélecteur de type et le bouton de date
                     Row(
                       children: [
-                        // Sélecteur de type de commande
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -122,7 +137,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  // ignore: deprecated_member_use
                                   color: theme.shadowColor,
                                   spreadRadius: 2,
                                   blurRadius: 5,
@@ -154,8 +168,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                                   setState(() {
                                     _selectedOrderType = newValue;
                                     _currentPage = 1;
-                                    
-                                    // Si "Tous les types" est sélectionné, on recharge la liste complète
                                     if (newValue == null) {
                                       _refreshOption();
                                     }
@@ -166,14 +178,12 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // Bouton de filtrage par date
                         Container(
                           decoration: BoxDecoration(
                             color: theme.searchBar,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                // ignore: deprecated_member_use
                                 color: theme.shadowColor,
                                 spreadRadius: 2,
                                 blurRadius: 5,
@@ -199,7 +209,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                                         data: ThemeData.light(),
                                         child: child!,
                                       );
- 
                                 },
                               );
                               if (selectedDate != null) {
@@ -220,8 +229,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                                 } else {
                                   setState(() {
                                     _orders = filteredOrders;
-                                    _selectedOrderType = null; // Réinitialiser le filtre de type
-                                    _currentPage = 1; // Retour à la première page
+                                    _selectedOrderType = null;
+                                    _currentPage = 1;
                                   });
                                 }
                               }
@@ -243,7 +252,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                 ),
               ),
               const SizedBox(height: 60),
-              // Pagination
               Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
@@ -286,7 +294,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
             child: IconButton(
               onPressed: () async {
                 try {
-                  // 1. Vérification des permissions
                   if (Platform.isAndroid) {
                     final status = await Permission.storage.status;
                     if (!status.isGranted) {
@@ -294,10 +301,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                     }
                   }
 
-                  // 2. Génération du PDF
                   final pdfBytes = await InternalOrderPdfService.generateInternalOrdersPdf(_orders);
 
-                  // 3. Vérification du répertoire de stockage
                   final directory = await getExternalStorageDirectory();
                   if (directory == null) {
                     if (mounted) {
@@ -311,18 +316,15 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                     return;
                   }
 
-                  // 4. Création du sous-dossier si nécessaire
                   final folder = Directory('${directory.path}/Pfe');
                   if (!await folder.exists()) {
                     await folder.create(recursive: true);
                   }
 
-                  // 5. Sauvegarde du fichier
                   final filePath = '${folder.path}/commandes_internes_${DateTime.now().millisecondsSinceEpoch}.pdf';
                   final file = File(filePath);
                   await file.writeAsBytes(pdfBytes);
 
-                  // 6. Vérification que le fichier existe bien
                   if (!await file.exists()) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -335,7 +337,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                     return;
                   }
 
-                  // 7. Ouverture du fichier avec gestion d'erreur
                   final result = await OpenFile.open(filePath);
                   
                   if (mounted) {
@@ -362,16 +363,17 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
               icon: Icon(Icons.download, color: theme.iconColor, size: 30),
             ),
           ),
-          Positioned(
-            right: 15,
-            bottom: 60,
-            child: FloatingActionButton(
-              onPressed: () => _showAddInternalOrderDialog(),
-              backgroundColor: theme.buttonColor,
-              elevation: 4,
-              child: Icon(Icons.add, color: Colors.white, size: 30),
+          if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_internalorder'] ?? false))
+            Positioned(
+              right: 15,
+              bottom: 60,
+              child: FloatingActionButton(
+                onPressed: () => _showAddInternalOrderDialog(appData),
+                backgroundColor: theme.buttonColor,
+                elevation: 4,
+                child: Icon(Icons.add, color: Colors.white, size: 30),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -379,6 +381,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
 
   Widget _buildOrderCard(InternalOrder order) {
     final theme = Provider.of<ThemeProvider>(context);
+    final appData = Provider.of<AppData>(context);
+
     return GestureDetector(
       onTap: () async {
         final updatedOrder = await Navigator.push(
@@ -387,8 +391,7 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
             builder: (context) => DetailsInternalOrderScreen(order: order),
           ),
         ).then((_) {
-          setState(() { 
-          });
+          setState(() {});
         });
 
         if (updatedOrder != null) {
@@ -411,19 +414,23 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                 children: [
                   Text(order.orderNum, style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
-                  Text('${order.date.day}/${order.date.month}/${order.date.year}', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('${order.date.day}/${order.date.month}/${order.date.year}', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ],
               ),
               Row(
                 children: [
-                  Text('Articles: ${order.items.length}', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('Articles: ${order.items.length}', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
-                  Text('${order.totalPrice.toStringAsFixed(2)} DH', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('${order.totalPrice.toStringAsFixed(2)} DH', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ],
               ),
               Row(
                 children: [
-                  Text(_getPaymentMethodText(order.paymentMethod), style: TextStyle(color: theme.secondaryTextColor)),
+                  Text(_getPaymentMethodText(order.paymentMethod), 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
                   Text(
                     _getStatusText(order.status),
@@ -433,7 +440,6 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
                   ),
                 ],
               ),
-              // Nouveau: Affichage du type de commande
               Row(
                 children: [
                   Text(
@@ -444,19 +450,25 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
               ),
             ],
           ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () => _showEditDialog(order),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _showDeleteDialog(order),
-              ),
-            ],
-          ),
+          trailing: ((userData?['is_staff'] ?? false) || 
+                   (myPrivileges?['edit_internalorder'] ?? false) || 
+                   (myPrivileges?['delete_internalorder'] ?? false))
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_internalorder'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _showEditDialog(appData, order),
+                      ),
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_internalorder'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _showDeleteDialog(appData, order),
+                      ),
+                  ],
+                )
+              : null,
         ),
       ),
     );
@@ -490,11 +502,12 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
     }
   }
 
-  void _showAddInternalOrderDialog() {
+  void _showAddInternalOrderDialog(AppData appData) {
     showDialog(
       context: context,
       builder: (context) => AddInternalOrderScreen(
         onOrderAdded: (newOrder) async {
+          await appData.fetchInternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -502,20 +515,20 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context); // Fermer le dialogue après l'ajout
+          Navigator.pop(context);
         },
       ),
     );
   }
 
-  void _showDeleteDialog(InternalOrder order) {
+  void _showDeleteDialog(AppData appData, InternalOrder order) {
     showDialog(
       context: context,
       builder: (context) => DeleteOrderDialog(
         orderId: order.orderNum,
         onConfirm: () async {
             if (order.id != null) {
-              await _handleDeleteOrder(order);
+              await _handleDeleteOrder(appData, order);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -530,24 +543,21 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
     );
   }
 
-  Future<void> _handleDeleteOrder(InternalOrder order) async {
+  Future<void> _handleDeleteOrder(AppData appData, InternalOrder order) async {
     try {
-      // Afficher l'indicateur de chargement
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
-      // 1. Suppression via API
+      
       final success = await InternalOrdersController.deleteOrder(order.id!);
       
-      // 2. Fermer l'indicateur
       if (mounted) Navigator.pop(context);
       
-      // 3. Mise à jour UI
       if (success && mounted) {
-        await _refreshOption(); // Rafraîchir toute la liste
-        
+        await appData.fetchInternalOrders();
+        await _refreshOption();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Commande de ${order.clientName} supprimé avec succès'),
@@ -560,7 +570,7 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Fermer l'indicateur en cas d'erreur
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: ${e.toString()}'),
@@ -571,12 +581,13 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
     }
   }
 
-  void _showEditDialog(InternalOrder order) {
+  void _showEditDialog(AppData appData, InternalOrder order) {
     showDialog(
       context: context,
       builder: (context) => EditInternalOrderScreen(
         order: order,
         onOrderUpdated: (updatedOrder) async {
+          await appData.fetchInternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -584,7 +595,7 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context); // Fermer le dialogue après l'ajout
+          Navigator.pop(context);
         },
       ),
     );

@@ -7,11 +7,12 @@ class InternalOrder {
   final DateTime date;
   final PaymentMethod paymentMethod;
   final double totalPrice;
-  final double paidPrice;
-  final double remainingPrice;
+  double paidPrice;
+  double remainingPrice;
   OrderStatus status;
   final String? description;
   final List<OrderItem> items;
+  final List<Payments>? payments;
   final DateTime? created;
   final DateTime? updated;
 
@@ -29,6 +30,7 @@ class InternalOrder {
     this.description,
     required this.status,
     required this.items,
+    this.payments,
     this.created,
     this.updated,
   });
@@ -70,6 +72,7 @@ class InternalOrder {
         'description': description,
         'status': status.name,
         'items': items.map((item) => item.toJson()).toList(),
+        'payments': payments?.map((payment) => payment.toJson()).toList(),
       };
     }
 
@@ -224,4 +227,45 @@ TypeOrder _mapStringToTypeOrder(String source) {
     default:
       throw Exception('TypeOrder inconnu : $source');
   }
+}
+
+class Payments {
+  final int? id;
+  final InternalOrder order;
+  final double totalPaid;
+  final PaymentMethod paymentMethod;
+  final String? paidAt;
+  final String? note;
+
+  Payments({
+    this.id,
+    required this.order,
+    required this.totalPaid,
+    required this.paymentMethod,
+    this.paidAt,
+    this.note,
+});
+
+  factory Payments.fromJson(Map<String, dynamic> json) {
+    return Payments(
+      id: json['id'],
+        order: json['order'],
+        totalPaid: double.parse(json['amount']),
+        paymentMethod: _mapStringToPayment(json['payment_method']),
+        paidAt: json['date'],
+        note: json['description'] ?? '',
+      );
+    }
+
+    Map<String, dynamic> toJson() {
+      return {
+        'order': order,
+        'amount': totalPaid.toString(),
+        'payment_method': paymentMethod.name,
+        'date': paidAt,
+        'description': note,
+      };
+    }
+
+
 }

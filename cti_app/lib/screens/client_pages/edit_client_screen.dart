@@ -1,7 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
-import 'package:cti_app/controller/customer_controller.dart';
-import 'package:cti_app/services/activity_service.dart';
+import 'package:cti_app/models/activity.dart';
+import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/client.dart';
@@ -60,11 +61,20 @@ class _EditClientScreenState extends State<EditClientScreen> {
           isCompagny: _iceController.text.isEmpty ? false : true,
         );
 
-        final updatedClient = await CustomerController.updateCustomer(updateClient);
-        widget.onEditClient(updatedClient);
-        Provider.of<ActivityService>(context, listen: false).addActivity(
-          "Modification du client : ${updatedClient.name}",
-          'edit',
+        final appData = Provider.of<AppData>(context, listen: false);
+        final _ = appData.updateClient(updateClient);
+
+
+        widget.onEditClient(updateClient);
+        
+        final activity = Activity (
+          description: "Modification du client : ${updateClient.name}",
+          iconName: 'edit',
+          timestamp: DateTime.now(),
+        );
+
+        Provider.of<AppData>(context, listen: false).addActivity(
+          activity,
         );
         Navigator.pop(context);
       }
@@ -76,17 +86,17 @@ class _EditClientScreenState extends State<EditClientScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: theme.dialogColor,
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -110,13 +120,12 @@ class _EditClientScreenState extends State<EditClientScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
+                      color: theme.iconColor,
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
-                    color: Colors.grey[600],
                   ),
                 ],
               ),
@@ -190,7 +199,7 @@ class _EditClientScreenState extends State<EditClientScreen> {
                       child: ElevatedButton(
                         onPressed: _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF004A99),
+                          backgroundColor: theme.buttonColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -233,7 +242,6 @@ class _EditClientScreenState extends State<EditClientScreen> {
           decoration: InputDecoration(
             hintText: hintText,
             filled: true,
-            fillColor: Colors.grey[50],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),

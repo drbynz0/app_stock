@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/customer_controller.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,22 +20,37 @@ class ClientManagementScreen extends StatefulWidget {
 
 class _ClientManagementScreenState extends State<ClientManagementScreen> {
   List<Client> _clients = [];
-
   String _searchQuery = '';
   int _currentPage = 1;
   final int _itemsPerPage = 5;
 
-    @override
+  Map<String, dynamic>? myPrivileges = {};
+  Map<String, dynamic>? userData = {};
+
+  @override
   void initState() {
     super.initState();
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-    final updatedClients = await CustomerController.getCustomers();
+    final appData = Provider.of<AppData>(context, listen: false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
+    });
+
+    if (appData.clients.isEmpty) {
+      await appData.fetchClients();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
     setState(() {
-      _clients = updatedClients;
+      _clients = appData.clients;
     });
   }
 
@@ -54,6 +70,8 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
+    final appData = Provider.of<AppData>(context); // On accède à AppData ici
+
     return Scaffold(
       body: Stack(
         children: [
@@ -68,7 +86,6 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        // ignore: deprecated_member_use
                         color: theme.shadowColor,
                         spreadRadius: 2,
                         blurRadius: 5,
@@ -77,12 +94,11 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                     ],
                   ),
                   child: TextField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Rechercher un client...',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -94,7 +110,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Liste des clients
+                /// LISTE DES CLIENTS
                 Expanded(
                   child: ListView.builder(
                     itemCount: paginatedClients.length,
@@ -105,7 +121,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ClientDetailsScreen(client: client, internalOrders: [],),
+                              builder: (context) => ClientDetailsScreen(client: client, internalOrders: []),
                             ),
                           );
                         },
@@ -119,7 +135,6 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                             padding: const EdgeInsets.all(10.0),
                             child: Row(
                               children: [
-                                // Badge avec les initiales du client
                                 CircleAvatar(
                                   radius: 30,
                                   backgroundColor: const Color(0xFF004A99),
@@ -133,50 +148,33 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                // Informations du client
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        client.name,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: theme.nameColor
-                                        ),
-                                      ),
+                                      Text(client.name,
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.nameColor)),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        client.email,
-                                        style: TextStyle(color: theme.secondaryTextColor, fontSize: 13),
-                                      ),
-                                      Text(
-                                        client.phone,
-                                        style: TextStyle(color: theme.secondaryTextColor, fontSize: 13),
-                                      ),
-                                      Text(
-                                        client.address,
-                                        style: TextStyle(color: theme.secondaryTextColor, fontSize: 13),
-                                      ),
+                                      Text(client.email, style: TextStyle(color: theme.secondaryTextColor, fontSize: 13)),
+                                      Text(client.phone, style: TextStyle(color: theme.secondaryTextColor, fontSize: 13)),
+                                      Text(client.address, style: TextStyle(color: theme.secondaryTextColor, fontSize: 13)),
                                     ],
                                   ),
                                 ),
-                                // Boutons d'action
                                 Column(
                                   children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      tooltip: 'Modifier',
-                                      onPressed: () => _showEditClientDialog(client),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      tooltip: 'Supprimer',
-                                      onPressed: () => {
-                                        _showDeleteDialog(client),
-                                      },
-                                    ),
+                                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_client'] ?? false))
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.blue),
+                                        tooltip: 'Modifier',
+                                        onPressed: () => _showEditClientDialog(appData, client),
+                                      ),
+                                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_client'] ?? false))
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        tooltip: 'Supprimer',
+                                        onPressed: () => _showDeleteDialog(appData, client),
+                                      ),
                                   ],
                                 ),
                               ],
@@ -188,7 +186,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                   ),
                 ),
 
-                // Pagination
+                // PAGINATION
                 Container(
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
@@ -203,9 +201,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                       ),
                       Row(
                         children: [
-                          Text(
-                            'Page $_currentPage/${(filteredClients.length / _itemsPerPage).ceil()}',
-                          ),
+                          Text('Page $_currentPage/${(filteredClients.length / _itemsPerPage).ceil()}'),
                           const SizedBox(width: 16),
                           IconButton(
                             icon: const Icon(Icons.arrow_back),
@@ -228,63 +224,79 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
             ),
           ),
 
-          // Bouton flottant positionné manuellement
-          Positioned(
-            bottom: 65,
-            right: 15, // Changez ces valeurs pour personnaliser la position
-            child: FloatingActionButton(
-              onPressed: _showAddClientDialog,
-              backgroundColor: Colors.blue,
-              child: const Icon(Icons.add, color: Colors.white),
+          /// BOUTON FLOTANT
+          if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_client'] ?? false))
+            Positioned(
+              bottom: 65,
+              right: 15,
+              child: FloatingActionButton(
+                onPressed: () => _showAddClientDialog(appData),
+                backgroundColor: Colors.blue,
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  void _showAddClientDialog() {
+  void _showAddClientDialog(AppData appData) {
     showDialog(
       context: context,
       builder: (context) => AddClientScreen(
         onAddClient: (newClient) async {
+          await appData.fetchClients();
           await _refreshOption();
+
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${newClient.name} est Ajouté avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.green,),
+            SnackBar(
+              content: Text('${newClient.name} est Ajouté avec succès'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
           );
+
           Navigator.pop(context);
         },
       ),
     );
   }
 
-    void _showEditClientDialog(Client client) {
+  void _showEditClientDialog(AppData appData, Client client) {
     showDialog(
       context: context,
       builder: (context) => EditClientScreen(
         client: client,
-        onEditClient: (updateClient) async {
+        onEditClient: (updatedClient) async {
+          await appData.fetchClients();
           await _refreshOption();
+
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${client.name} est Modifié avec succès'), backgroundColor: Colors.green,),
+            SnackBar(content: Text('${client.name} est Modifié avec succès'), backgroundColor: Colors.green),
           );
+
           Navigator.pop(context);
         },
       ),
     );
   }
 
-  void _showDeleteDialog(Client client) {
+  void _showDeleteDialog(AppData appData, Client client) {
     showDialog(
       context: context,
-      builder: (context) =>  DeleteClientScreen(
+      builder: (context) => DeleteClientScreen(
         client: client,
         onDeleteClient: () async {
           await CustomerController.deleteCustomer(client.id!);
+          await appData.fetchClients();
           await _refreshOption();
+
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${client.name} est supprimé avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.red,),
+            SnackBar(content: Text('${client.name} est supprimé avec succès'), backgroundColor: Colors.red),
           );
+
           Navigator.pop(context);
         },
       ),

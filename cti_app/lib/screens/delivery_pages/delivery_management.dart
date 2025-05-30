@@ -1,8 +1,12 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:cti_app/controller/delivery_notes_controller.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cti_app/models/delivery_note.dart';
 import 'package:cti_app/screens/delivery_pages/delivery_note_detail_screen.dart';
+import 'package:provider/provider.dart';
 
 class DeliveryNotesScreen extends StatefulWidget {
   const DeliveryNotesScreen({super.key});
@@ -50,14 +54,13 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           'Bons à délivrer',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
@@ -71,11 +74,10 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    // ignore: deprecated_member_use
                     color: Colors.grey.withOpacity(0.2),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: const Offset(0, 3),
+                    offset: const Offset(0, 3), // décalage de l'ombre
                   ),
                 ],
               ),
@@ -85,7 +87,6 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
                   hintText: 'Rechercher un bon...',
                   hintStyle: TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
@@ -97,7 +98,6 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
               child: _filteredNotes.isEmpty
                   ? Center(
                       child: Card(
-                        color: const Color.fromARGB(255, 194, 224, 240),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
@@ -127,7 +127,6 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
                             );
                           },
                           child: Card(
-                            color: const Color.fromARGB(255, 194, 224, 240),
                             elevation: 4,
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(
@@ -151,29 +150,29 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
                                       children: [
                                         Text(
                                           'Bon n° ${note.noteNumber}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
-                                            color: Color.fromARGB(255, 9, 10, 11),
+                                            color: theme.titleColor,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           'Client: ${note.clientName}',
                                           style: TextStyle(
-                                              color: Colors.grey[700],
+                                              color: theme.secondaryTextColor,
                                               fontSize: 13),
                                         ),
                                         Text(
                                           'Date: ${_formatDate(note.date!)}',
                                           style: TextStyle(
-                                              color: Colors.grey[700],
+                                              color: theme.secondaryTextColor,
                                               fontSize: 13),
                                         ),
                                         Text(
                                           'Total: ${NumberFormat.currency(locale: 'fr', symbol: 'DH').format(note.totalAmount)}',
                                           style: TextStyle(
-                                              color: Colors.grey[700],
+                                              color: theme.secondaryTextColor,
                                               fontSize: 13),
                                         ),
                                       ],

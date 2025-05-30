@@ -2,7 +2,9 @@ import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/controller/facture_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/models/client.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/factures.dart';
 import '/models/internal_order.dart';
 import 'details_facture_internal_screen.dart'; // Importez votre écran de détail
@@ -48,6 +50,7 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredFactures = _filterFactures(internalFactures);
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -55,8 +58,9 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
         children: [
           TextField(
             controller: _searchController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Rechercher par nom du client',
+              labelStyle: TextStyle(color: theme.textColor),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(30)),
               ),
@@ -75,12 +79,11 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
               itemBuilder: (context, index) {
                 final facture = filteredFactures[index];
                 return Card(
-                  color: const Color.fromARGB(255, 194, 224, 240),
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   child: ListTile(
-                    title: Text(facture.clientName),
-                    subtitle: Text('Montant: ${facture.amount.toStringAsFixed(2)} DH'),
-                    trailing: Text(facture.date),
+                    title: Text(facture.clientName, style: TextStyle(color: theme.nameColor)),
+                    subtitle: Text('Montant: ${facture.amount.toStringAsFixed(2)} DH', style: TextStyle(color: theme.secondaryTextColor)),
+                    trailing: Text(facture.date, style: TextStyle(color: theme.secondaryTextColor)),
                     onTap: () => _showFactureDetails(facture),
                   ),
                 );

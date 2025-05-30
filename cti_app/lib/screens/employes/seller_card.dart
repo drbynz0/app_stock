@@ -3,7 +3,9 @@
 import 'package:cti_app/controller/user_controller.dart';
 import 'package:cti_app/screens/employes/edit_seller_screen.dart';
 import 'package:cti_app/screens/employes/sellers_details_screen.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class EmployeCard extends StatelessWidget {
   final dynamic employee;
@@ -20,34 +22,31 @@ class EmployeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSeller = employee['user_type'] == 'SELLER';
-    final color = isSeller ? const Color.fromARGB(255, 4, 90, 160) : Colors.deepPurple;
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Card(
-      color: const Color.fromARGB(255, 194, 224, 240),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: isSeller 
-            ? () => Navigator.push(
+        onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => SellerDetailScreen(seller: employee),
                   ),
                 ).then((_) {
                   onUpdate.call();
-                })
-            : null,
+                }),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: color.withOpacity(0.2),
+                backgroundColor: theme.buttonColor.withOpacity(0.2),
                 child: Icon(
                   isSeller ? Icons.person : Icons.admin_panel_settings,
-                  color: color,
+                  color: theme.buttonColor,
                 ),
               ),
               const SizedBox(width: 16),
@@ -56,11 +55,11 @@ class EmployeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      employee['username'] ?? 'Sans nom',
+                      '${employee['first_name']} ${employee['last_name']}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: color,
+                        color: theme.titleColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -70,8 +69,8 @@ class EmployeCard extends StatelessWidget {
                     ),
                     Chip(
                       label: Text(employee['user_type']),
-                      backgroundColor: color.withOpacity(0.1),
-                      labelStyle: TextStyle(color: color),
+                      backgroundColor: theme.buttonColor.withOpacity(0.1),
+                      labelStyle: TextStyle(color: theme.buttonColor),
                     ),
                   ],
                 ),

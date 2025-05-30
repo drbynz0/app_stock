@@ -4,6 +4,7 @@ import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/services/alert_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/client.dart';
@@ -293,10 +294,12 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
+      backgroundColor: theme.dialogColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -306,11 +309,12 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Modifier Commande Client',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: theme.iconColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -326,9 +330,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 child: InputDecorator(
                   decoration: InputDecoration(
                     labelText: 'Date de Commande',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -358,9 +359,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Type de commande',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -386,9 +384,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Statut',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -411,9 +406,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Moyen de Paiement*',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -424,9 +416,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 controller: _totalPriceController,
                 decoration: InputDecoration(
                   labelText: 'Prix Total',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -436,9 +425,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 controller: _paidPriceController,
                 decoration: InputDecoration(
                   labelText: 'Prix Payé',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -468,9 +454,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 enabled: false,
                 decoration: InputDecoration(
                   labelText: 'Prix Restant',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -481,9 +464,6 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                 maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -524,7 +504,8 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         minimumSize: const Size(double.infinity, 50),
-                      ),
+                        backgroundColor: theme.backgroundColor,
+                    ),
                       child: const Text('Annuler', style: TextStyle(fontSize: 16)),
                     ),
                   ),

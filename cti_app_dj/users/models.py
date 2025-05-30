@@ -6,9 +6,11 @@ class User(AbstractUser):
     USER_TYPES = (
         ('SELLER', 'Vendeur'),
         ('ADMIN', 'Administrateur'),
+        
     )
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='ADMIN')
     phone = models.CharField(max_length=20, blank=True, null=True)
+    token = models.CharField(max_length=255, blank=True, null=True)
     
     @property
     def is_seller(self):

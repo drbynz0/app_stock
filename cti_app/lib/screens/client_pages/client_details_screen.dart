@@ -1,4 +1,6 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/client.dart';
 import '/models/internal_order.dart';
 import '../transactions_pages/details_internal_order.dart';
@@ -14,6 +16,7 @@ class ClientDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     // Filtrer les commandes du client
     final clientOrders = internalOrders.where((order) => order.clientId == client.id).toList();
 
@@ -25,7 +28,6 @@ class ClientDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         title: const Text(
           'Détails du client',
           style: TextStyle(color: Colors.white),
@@ -38,17 +40,16 @@ class ClientDetailsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Détails du client
-            const Text(
+            Text(
               'Informations du client',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
-              color: const Color.fromARGB(255, 194, 224, 240),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -74,17 +75,16 @@ class ClientDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Carte récapitulative des commandes
-            const Text(
+            Text(
               'Statistiques des Commandes',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
-              color: const Color.fromARGB(255, 207, 230, 244),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -105,12 +105,12 @@ class ClientDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Liste des commandes
-            const Text(
+            Text(
               'Commandes',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -131,7 +131,6 @@ class ClientDetailsScreen extends StatelessWidget {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.black87,
           ),
         ),
         Expanded(
@@ -139,7 +138,6 @@ class ClientDetailsScreen extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 16,
-              color: Colors.black54,
             ),
           ),
         ),
@@ -164,7 +162,6 @@ class ClientDetailsScreen extends StatelessWidget {
           label,
           style: const TextStyle(
             fontSize: 16,
-            color: Colors.black54,
           ),
         ),
       ],

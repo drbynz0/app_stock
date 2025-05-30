@@ -1,6 +1,6 @@
 from rest_framework import generics # type: ignore
 from .models import InternalOrder
-from .serializers import InternalOrderSerializer
+from .serializers import InternalOrderSerializer, OrderItemSerializer
 
 class InternalOrderListCreateView(generics.ListCreateAPIView):
     queryset = InternalOrder.objects.all().order_by('-created_at')
@@ -9,3 +9,4 @@ class InternalOrderListCreateView(generics.ListCreateAPIView):
 class InternalOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = InternalOrder.objects.all()
     serializer_class = InternalOrderSerializer
+    

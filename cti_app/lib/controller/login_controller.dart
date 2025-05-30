@@ -13,8 +13,7 @@ class AuthController {
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
           'password': password,
@@ -28,6 +27,7 @@ class AuthController {
           token: responseData['token'],
           userData: responseData['user'],
           isAdmin: responseData['is_admin'],
+          lastLogin: DateTime.now(),
         );
         return true;
       } else {
@@ -41,17 +41,18 @@ class AuthController {
   }
 
 
-  Future<String> saveUserData({required String token, required Map<String, dynamic> userData, required bool isAdmin}) async {
+  Future<String> saveUserData({required String token, required Map<String, dynamic> userData, required bool isAdmin, required DateTime lastLogin}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
     await prefs.setString('user_data', jsonEncode(userData));
+    await prefs.setString('last_login', lastLogin.toIso8601String());
     final user = jsonDecode(prefs.getString('user_data') ?? 'Inconnu');
     await prefs.setBool('is_admin', isAdmin);
     return isadmin = user['user_type'];
   }
 
   // Méthode pour vérifier si l'utilisateur est déjà connecté
-  static Future<bool> isLoggedIn() async {
+  Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token') != null;
   }

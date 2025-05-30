@@ -1,14 +1,15 @@
-import 'package:cti_app/theme/theme_provider.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context);
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           // Forme décorative haut de page
@@ -40,33 +41,35 @@ class WelcomeScreen extends StatelessWidget {
                     height: 200,
                   ),
 
-                  Text(
+                  const Text(
                     'Bienvenue chez CTI TECHNOLOGIE',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: theme.titleColor,
+                      color: Color(0xFF002E6D),
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
 
-                  Text(
+                  const Text(
                     'Des solutions technologiques innovantes pour vous !',
                     style: TextStyle(
                       fontSize: 18,
-                      color: theme.secondaryTextColor,
+                      color: Colors.black87,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
 
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/login');
-                    },
+                    onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('isFirstLaunch', false);
+
+                        Navigator.pushReplacementNamed(context, '/login');                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.buttonColor,
+                      backgroundColor: Color(0xFF002E6D),
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -74,7 +77,7 @@ class WelcomeScreen extends StatelessWidget {
                       elevation: 6,
                       shadowColor: Colors.black54,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Commencer',
                       style: TextStyle(
                         fontSize: 18,

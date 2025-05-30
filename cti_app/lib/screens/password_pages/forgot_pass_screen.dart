@@ -1,4 +1,13 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
+import 'dart:convert';
+
+import 'package:cti_app/constants/app_constant.dart';
+import 'package:cti_app/screens/password_pages/verify_code_screen.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -9,69 +18,82 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  bool _isLoading = false;
+  final TextEditingController _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  final _baseurl = AppConstant.BASE_URL + AppConstant.PASSWORD_RESET;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
-  void _submitResetRequest() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+Future<void> _sendCode() async {
+  final theme = Provider.of<ThemeProvider>(context, listen: false);
 
-      // Simulation d'envoi d'email
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() => _isLoading = false);
-        _showSuccessDialog();
-      });
-    }
-  }
-
-  void _showSuccessDialog() {
+  if (_formKey.currentState!.validate()) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 10),
-            Text('Email envoyé'),
-          ],
-        ),
-        content: const Text(
-          'Un lien de réinitialisation a été envoyé à votre adresse email. '
-          'Veuillez vérifier votre boîte de réception.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Fermer le dialogue
-              Navigator.pop(context); // Retour à l'écran de login
-            },
-            child: const Text('OK', style: TextStyle(color: Color(0xFF002E6D))),
-          ),
-        ],
-      ),
+      barrierDismissible: false, // empêche de fermer pendant chargement
+      builder: (context) => Center(child: CircularProgressIndicator(color: theme.iconColor,)),
     );
+
+    try {
+      final response = await http.post(
+        Uri.parse(_baseurl),
+        body: jsonEncode({
+          'email': _emailController.text,
+          'username': _usernameController.text,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      Navigator.pop(context); // Ferme le dialog
+
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerifyCodeScreen(email: _emailController.text),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: ${response.statusCode} - ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Ferme le dialog en cas d’erreur
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Une erreur est survenue: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF002E6D)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
+ // <- Barre en haut
         child: Form(
           key: _formKey,
           child: Column(
@@ -92,41 +114,62 @@ class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Réinitialiser votre mot de passe',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF002E6D),
+                  color: theme.titleColor,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.0),
                 child: Text(
                   'Entrez votre email pour recevoir un lien de réinitialisation',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: theme.secondaryTextColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 40),
               TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Nom d\'utilisateur',
+                  hintText: 'mon_nom_utilisateur',
+                  labelStyle: TextStyle(
+                    color: theme.textColor,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer votre nom d\'utilisateur';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: 'votre@email.com',
-                  labelStyle: const TextStyle(color: Color(0xFF002E6D)),
+                  labelStyle: TextStyle(
+                    color: theme.textColor,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF002E6D)),
-                  ),
-                  prefixIcon: const Icon(Icons.email, color: Color(0xFF002E6D)),
+                  prefixIcon: const Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -144,32 +187,31 @@ class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitResetRequest,
+                  onPressed: _sendCode,
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF002E6D),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'ENVOYER LE LIEN',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white, // Texte en blanc
-                          ),
-                        ),
+                  child: const Text(
+                    'ENVOYER LE CODE',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Texte en blanc
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Retour à la connexion',
                   style: TextStyle(
-                    color: Color(0xFF002E6D),
+                    color: theme.textColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

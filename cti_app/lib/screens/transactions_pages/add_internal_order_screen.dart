@@ -2,9 +2,10 @@
 
 import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/controller/delivery_notes_controller.dart';
-import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/services/alert_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import '/models/delivery_note.dart';
 import 'package:provider/provider.dart';
@@ -106,30 +107,70 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
           description: _descriptionController.text,
           status: _status,
           items: _items,
+          payments: [],
         );
 
 
-                // Enregistrement de la commande
-        final createdOrder = await InternalOrdersController.addOrder(newOrder);
+        // Enregistrement de la commande
+        final appData = Provider.of<AppData>(context, listen: false);
+        final createdOrder = await appData.addInternalOrder(newOrder);
+        // Créer le nouveau paiement
+        final newPayment = Payments(
+          order: createdOrder,
+          totalPaid: paidPrice,
+          paymentMethod: _paymentMethod,
+          note: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          paidAt: DateTime.now().toIso8601String(),
+        );
+        // Ajouter le paiement à la commande
+        appData.addPayment(createdOrder.id!, newPayment);
+        createdOrder.payments?.add(newPayment);
 
-        // Vérification de l'état de la commande
-        if (_status == OrderStatus.completed) {
-          for (var item in _items) {
-            final productIndex = _availableProducts.indexWhere((product) => product.code == item.productRef);
-            if (productIndex != -1) {
+      // Vérification de l'état de la commande
+      if (_status == OrderStatus.completed) {
+        // Mise à jour du stock pour chaque produit
+        for (var item in _items) {
+          final productIndex = _availableProducts.indexWhere(
+              (product) => product.code == item.productRef);
+          
+          if (productIndex != -1) {
+            final product = _availableProducts[productIndex];
+            final newStock = product.stock - item.quantity;
+            
+            try {
+              // Mise à jour en local
               setState(() {
-                _availableProducts[productIndex].stock -= item.quantity;
+                _availableProducts[productIndex] = product.copyWith(
+                  stock: newStock,
+                  available: newStock > 0,
+                );
               });
+
+              // Mise à jour sur le serveur
+              await ProductController.updateProductStock(
+                productId: product.id,
+                newStock: newStock,
+              );
+
+              debugPrint('Stock mis à jour pour ${product.name}');
+            } catch (e) {
+              debugPrint('Erreur lors de la mise à jour du stock pour ${product.name}: $e');
+              // Annuler la modification locale si l'API échoue
+              setState(() {
+                _availableProducts[productIndex] = product;
+              });
+              // Vous pourriez choisir de relancer l'exception ici si nécessaire
             }
           }
-          
-          // Ajouter la facture si le statut est "Terminée"
-          FactureClient.addFactureForOrder(createdOrder);
         }
+
+        // Ajouter la facture si le statut est "Terminée"
+        FactureClient.addFactureForOrder(createdOrder);
+      }
 
         // Créer un bon de livraison si la commande est en ligne
         if (_type == TypeOrder.online) {
-          _createDeliveryNote(newOrder);
+          _createDeliveryNote(createdOrder);
         }
 
         widget.onOrderAdded(newOrder);
@@ -257,11 +298,26 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
+      backgroundColor: theme.dialogColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -270,11 +326,12 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Nouvelle Commande Client',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: theme.iconColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -470,7 +527,7 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: theme.backgroundColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         minimumSize: const Size(double.infinity, 50),
                       ),
@@ -495,6 +552,7 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -502,6 +560,7 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
     await showDialog<List<OrderItem>>(
       context: context,
       builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(20),
         child: AddInternArticleDialog(
           availableProducts: _availableProducts,
           onArticlesAdded: (items) {

@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:cti_app/constants/app_constant.dart';
 import 'package:cti_app/screens/employes/seller_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/controller/user_controller.dart';
@@ -52,7 +51,6 @@ class _EmployeScreenState extends State<EmployeScreen> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: AppConstant.APPBAR_COLOR,
         title: const Text('Gestion des Employés', style: TextStyle(color: Colors.white)),
       ),
       body: isLoading
@@ -67,11 +65,7 @@ class _EmployeScreenState extends State<EmployeScreen> {
                       decoration: InputDecoration(
                         hintText: 'Rechercher un employé...',
                         prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
                         filled: true,
-                        fillColor: Colors.white,
                       ),
                       onChanged: (value) => setState(() => searchQuery = value),
                     ),

@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/controller/user_controller.dart';
 
 class SellerDetailScreen extends StatefulWidget {
@@ -93,8 +95,8 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
   }
 
   Widget _buildInfoCard() {
+    final theme = Provider.of<ThemeProvider>(context);
     return Card(
-      color: const Color.fromARGB(255, 194, 224, 240),
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
@@ -117,17 +119,22 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.seller['username'],
+                        '${widget.seller['first_name']} ${widget.seller['last_name']}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      Text(
+                        '@${widget.seller['username']}',
+                        style: TextStyle(
+                          color: theme.secondaryTextColor,
+                        ),
+                      ),
                       Text(
                         widget.seller['email'],
                         style: TextStyle(
-                          color: Colors.grey.shade600,
+                          color: theme.secondaryTextColor,
                         ),
                       ),
                     ],
@@ -149,7 +156,7 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color.fromARGB(255, 8, 121, 242)),
+          Icon(icon, size: 20),
           const SizedBox(width: 12),
           Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
@@ -158,17 +165,18 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
   }
 
   Widget _buildPrivilegeSection() {
+    final theme = Provider.of<ThemeProvider>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(bottom: 8),
           child: Text(
             'PRIVILÈGES',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: theme.titleColor,
               letterSpacing: 1.2,
             ),
           ),
@@ -251,7 +259,6 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 163, 202, 244),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade300),
@@ -306,8 +313,7 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color(0xFF003366),
-        title: Text('${widget.seller['username']}', style: const TextStyle(color: Colors.white)),
+        title: Text('${widget.seller['first_name']} ${widget.seller['last_name']}', style: const TextStyle(color: Colors.white)),
         elevation: 0,
       ),
       body: isLoading

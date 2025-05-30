@@ -1,9 +1,9 @@
 
 import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
-import 'package:cti_app/controller/login_controller.dart';
 import 'package:cti_app/screens/categorie/categorie_management_screen.dart';
 import 'package:cti_app/screens/employes/sellers_management_screen.dart';
+import 'package:cti_app/services/profile_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +30,7 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
   List<InternalOrder> internalOrders = [];
   List<ExternalOrder> externalOrders = [];
   List<Map<String, dynamic>> options = [];
+  Map<String, dynamic>? _profile= {};
 
   @override
   void initState() {
@@ -37,12 +38,14 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
     _loadOption();
     // Initialisation ou chargement de données si nécessaire
   }
-
   Future<void> _loadOption() async {
+    final updatedProfile = Provider.of<ProfileService>(context, listen: false).userProfile;
+
     final fetchInternalOrders = await InternalOrdersController.fetchOrders();
     final fetchExternalOrders = await ExternalOrdersController.fetchOrders();
     final fetchedProducts = await ProductController.fetchProducts();
     setState(() {
+      _profile = updatedProfile;
       internalOrders = fetchInternalOrders;
       externalOrders = fetchExternalOrders;
       products = fetchedProducts;
@@ -67,7 +70,7 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
   }
 
   Widget _buildBody(List<Map<String, dynamic>> options, BuildContext context) {
-    if(AuthController.isadmin == 'ADMIN'){
+    if(_profile!['is_staff'] == true) {
       options.add({'label': 'Employés', 'icon': Icons.people});
     }
     return Padding(

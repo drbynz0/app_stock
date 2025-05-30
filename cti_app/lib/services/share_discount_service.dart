@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '/models/discounts.dart';
@@ -157,13 +159,15 @@ Ne manquez pas cette offre exceptionnelle !
     required Product product,
     String? imagePath,
   }) async {
+    final theme = Provider.of<ThemeProvider>(context, listen: false);
     await showModalBottomSheet(
+      backgroundColor: theme.dialogColor,
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(
                 'Partager la promotion',

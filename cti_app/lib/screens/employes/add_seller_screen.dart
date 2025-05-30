@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, use_super_parameters
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/controller/user_controller.dart';
+import 'package:provider/provider.dart';
 
 class AddEmployeDialog extends StatefulWidget {
   final VoidCallback onEmployeeAdded;
@@ -14,17 +16,21 @@ class AddEmployeDialog extends StatefulWidget {
 
 class _AddEmployeDialogState extends State<AddEmployeDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
-  String _privilege = 'SELLER';
+  String _userType = 'SELLER';
   bool _isLoading = false;
   bool _obscurePassword = true; // Pour gérer la visibilité du mot de passe
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
@@ -36,12 +42,17 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
 
     setState(() => _isLoading = true);
     try {
+      final updatedData = {
+        'username': _usernameController.text,
+        'first_name': _firstNameController.text,
+        'last_name': _lastNameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'phone': _phoneController.text,
+        'user_type': _userType,
+      };
       await UserController.addUser(
-        _nameController.text,
-        _emailController.text,
-        _passwordController.text,
-        _phoneController.text,
-        _privilege,
+        updatedData,
       );
       widget.onEmployeeAdded();
       Navigator.pop(context);
@@ -59,9 +70,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.blue.shade800;
-    final textColor = Colors.white;
-
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
@@ -84,29 +93,57 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: primaryColor,
+                      color: theme.titleColor,
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: primaryColor),
+                    icon: Icon(Icons.close, color: theme.iconColor),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _nameController,
+                controller: _usernameController,
                 decoration: InputDecoration(
                   labelText: 'Nom d\'utilisateur',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.person, color: primaryColor),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (value) => value!.isEmpty ? 'Champ obligatoire' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: InputDecoration(
+                  labelText: 'Prénom',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                validator: (value) => value!.isEmpty ? 'Champ obligatoire' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: InputDecoration(
+                  labelText: 'Nom',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: Icon(Icons.person),
                 ),
                 validator: (value) => value!.isEmpty ? 'Champ obligatoire' : null,
               ),
@@ -117,13 +154,11 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                   labelText: 'Email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.email, color: primaryColor),
+                  prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) => 
@@ -137,17 +172,14 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                   labelText: 'Mot de passe',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock, color: primaryColor),
+                  prefixIcon: Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      color: primaryColor,
                     ),
                     onPressed: () {
                       setState(() {
@@ -167,41 +199,34 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
 
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.phone, color: primaryColor),
+                  prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _privilege,
+                value: _userType,
                 decoration: InputDecoration(
                   labelText: 'Rôle',
-                  labelStyle: TextStyle(color: primaryColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
-                  prefixIcon: Icon(Icons.work, color: primaryColor),
+                  prefixIcon: Icon(Icons.work),
                 ),
-                dropdownColor: Colors.white,
-                style: TextStyle(color: Colors.black),
                 items: ['ADMIN', 'SELLER']
                     .map((role) => DropdownMenuItem(
                           value: role,
                           child: Text(role),
                         ))
                     .toList(),
-                onChanged: (value) => setState(() => _privilege = value!),
+                onChanged: (value) => setState(() => _userType = value!),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -209,20 +234,20 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: theme.buttonColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   onPressed: _isLoading ? null : _submit,
                   child: _isLoading
-                      ? CircularProgressIndicator(color: textColor)
+                      ? CircularProgressIndicator(color: theme.textColor)
                       : Text(
                           'ENREGISTRER',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: textColor,
+                            color: theme.textColor,
                           ),
                         ),
                 ),

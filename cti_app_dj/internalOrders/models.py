@@ -41,3 +41,13 @@ class OrderItem(models.Model):
     product_image = models.URLField(blank=True, null=True)
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+class Payment(models.Model):
+    order = models.ForeignKey(InternalOrder, related_name='payments', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=InternalOrder.PAYMENT_METHOD_CHOICES)
+    date = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount} for Order {self.order.order_num}"

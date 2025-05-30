@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cti_app/services/alert_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,15 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
   }
 
   void _submitSelection() {
+    for (final entry in _selectedProducts.entries) {
+      final product = widget.availableProducts.firstWhere((p) => p.code == entry.key);
+      if (product.stock == 0 || entry.value > product.stock) {
+        AlertService.showAlert(context: context, title: 'Erreur', message:  product.stock == 0
+                ? 'Stock épuisé pour ${product.name}'
+                : 'Stock insuffisant pour ${product.name} (stock: ${product.stock})');
+        return; // Empêche l’ajout
+      }
+    }
     final selectedItems = _selectedProducts.entries.map((entry) {
       final product = widget.availableProducts.firstWhere((p) => p.code == entry.key);
       return OrderItem(
@@ -124,22 +134,23 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
     });
 
     return Dialog(
-      insetPadding: const EdgeInsets.all(16),
+      insetPadding: const EdgeInsets.all(0),
+      backgroundColor: theme.dialogColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               'Ajouter des articles',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: theme.iconColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -150,7 +161,6 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
               decoration: InputDecoration(
                 hintText: 'Rechercher un article...',
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.barcode_reader, color: theme.iconColor),
                   onPressed: () async {
@@ -217,7 +227,7 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
                   final quantity = _selectedProducts[product.code] ?? 0;
 
                   return Card(
-                    color: quantity > 0 ? const Color.fromARGB(255, 114, 185, 243) : theme.primaryColor,
+                    color: quantity > 0 ? const Color.fromARGB(255, 114, 185, 243) : theme.cardColor,
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       title: Text(product.name),
@@ -275,10 +285,10 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
+                ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: theme.backgroundColor,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   child: const Text('Annuler'),

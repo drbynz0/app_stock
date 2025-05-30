@@ -2,6 +2,7 @@
 
 import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
@@ -108,7 +109,22 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
             const SizedBox(height: 24),
 
             //Section Prix
-            _buildSectionHeader('Prix'),
+            Row(
+              children: [
+              _buildSectionHeader('Prix'),
+              Spacer(),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _showAddPaymentDialog(context),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Color(0xFF004A99),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Ajouter Paiement', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              ],
+            ),
             _buildAllPrice(),
             const SizedBox(height: 24),
 
@@ -446,5 +462,140 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
     ),
   );
 }
+
+  void _showAddPaymentDialog(BuildContext context) {
+    final appData = Provider.of<AppData>(context, listen: false);
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
+    PaymentMethod selectedMethod = PaymentMethod.cash;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ajouter un paiement'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Montant',
+                  prefixText: 'DH ',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer un montant';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Montant invalide';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<PaymentMethod>(
+                value: selectedMethod,
+                decoration: const InputDecoration(
+                  labelText: 'Méthode de paiement',
+                  border: OutlineInputBorder(),
+                ),
+                items: PaymentMethod.values.map((method) {
+                  return DropdownMenuItem(
+                    value: method,
+                    child: Text(_getPaymentMethodText(method)),
+                  );
+                }).toList(),
+                onChanged: (method) {
+                  if (method != null) {
+                    selectedMethod = method;
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: noteController,
+                decoration: const InputDecoration(
+                  labelText: 'Note (optionnel)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Veuillez entrer un montant valide'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                // Créer le nouveau paiement
+                final newPayment = Payments(
+                  order: order,
+                  totalPaid: amount,
+                  paymentMethod: selectedMethod,
+                  note: noteController.text.isNotEmpty ? noteController.text : null,
+                  paidAt: DateTime.now().toIso8601String(),
+                );
+
+                // Appeler l'API pour ajouter le paiement
+                appData.addPayment(order.id!, newPayment);
+
+                // Mettre à jour l'interface
+                setState(() {
+                  order.paidPrice += amount;
+                  order.remainingPrice = order.totalPrice - order.paidPrice;
+                });
+
+                                        // Ajouter la facture si le statut est "Terminée"
+                  FactureClient.updateFactureForOrder(order);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Statut mis à jour et facture créée'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                // Fermer le dialog
+                Navigator.pop(context);
+
+                // Afficher un message de succès
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Paiement ajouté avec succès'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erreur: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Ajouter'),
+          ),
+        ],
+      ),
+    );
+  }
 
 }

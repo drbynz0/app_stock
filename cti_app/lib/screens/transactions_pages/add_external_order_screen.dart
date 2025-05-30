@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
-import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/controller/supplier_controller.dart';
+import 'package:cti_app/services/external_order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/factures.dart';
@@ -103,21 +103,48 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
         items: _items,
       );
 
-      final createdOrder = await ExternalOrdersController.addOrder(newOrder);
-
+        final orderService = Provider.of<ExternalOrderService>(context, listen: false);
+        final createdOrder = await orderService.addExternalOrder(newOrder);
 
       // Vérification de l'état de la commande
       if (_status == OrderStatus.completed) {
+        // Mise à jour du stock pour chaque produit
         for (var item in _items) {
-          final productIndex = _availableProducts.indexWhere((product) => product.id == item.productId);
+          final productIndex = _availableProducts.indexWhere(
+              (product) => product.code == item.productRef);
+          
           if (productIndex != -1) {
-            setState(() {
-              _availableProducts[productIndex].stock += item.quantity;
-            });
+            final product = _availableProducts[productIndex];
+            final newStock = product.stock + item.quantity;
+            
+            try {
+              // Mise à jour en local
+              setState(() {
+                _availableProducts[productIndex] = product.copyWith(
+                  stock: newStock,
+                  available: newStock > 0,
+                );
+              });
+
+              // Mise à jour sur le serveur
+              await ProductController.updateProductStock(
+                productId: product.id,
+                newStock: newStock,
+              );
+
+              debugPrint('Stock mis à jour pour ${product.name}');
+            } catch (e) {
+              debugPrint('Erreur lors de la mise à jour du stock pour ${product.name}: $e');
+              // Annuler la modification locale si l'API échoue
+              setState(() {
+                _availableProducts[productIndex] = product;
+              });
+              // Vous pourriez choisir de relancer l'exception ici si nécessaire
+            }
           }
         }
-        
-        // Ajouter la facture fournisseur si le statut est "Terminée"
+
+        // Ajouter la facture si le statut est "Terminée"
         FactureFournisseur.addFactureForOrder(createdOrder);
       }
       

@@ -74,7 +74,6 @@ class FacturesExternalScreenState extends State<FacturesExternalScreen> {
               itemBuilder: (context, index) {
                 final facture = filteredFactures[index];
                 return Card(
-                  color: const Color.fromARGB(255, 194, 224, 240),
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   child: ListTile(
                     title: Text(facture.supplierName),

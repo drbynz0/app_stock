@@ -76,7 +76,6 @@ class _StatsPageState extends State<StatsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         iconTheme: IconThemeData(color: Colors.white),
         title: const Text('Statistiques', style: TextStyle(color: Colors.white)),
       ),

@@ -1,24 +1,79 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PinCodeScreen extends StatefulWidget {
-  const PinCodeScreen({super.key});
+  final bool isCreating;
+  const PinCodeScreen({super.key, this.isCreating = false});
 
   @override
   State<PinCodeScreen> createState() => _PinCodeScreenState();
 }
 
 class _PinCodeScreenState extends State<PinCodeScreen> {
+  final _storage = const FlutterSecureStorage();
   String pin = "";
+  String? _confirmPin;
+  bool _isConfirming = false;
 
-  void _addDigit(String digit) {
+  void _addDigit(String digit) async {
     if (pin.length < 4) {
       setState(() {
         pin += digit;
       });
 
       if (pin.length == 4) {
-        // Tu peux valider ici ou enregistrer
-        Navigator.pop(context, true);
+        if (widget.isCreating) {
+          if (!_isConfirming) {
+            // Première saisie du PIN
+            setState(() {
+              _confirmPin = pin;
+              pin = "";
+              _isConfirming = true;
+            });
+          } else {
+            // Confirmation du PIN
+            if (pin == _confirmPin) {
+              await _storage.write(key: 'user_pin', value: pin);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Code PIN enregistré avec succès"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.pop(context, true);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Les codes PIN ne correspondent pas"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              setState(() {
+                pin = "";
+                _confirmPin = null;
+                _isConfirming = false;
+              });
+            }
+          }
+        } else {
+          // Mode vérification
+          final savedPin = await _storage.read(key: 'user_pin');
+          if (pin == savedPin) {
+            Navigator.pop(context, true);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Code PIN incorrect"),
+                backgroundColor: Colors.red,
+              ),
+            );
+            setState(() {
+              pin = "";
+            });
+          }
+        }
       }
     }
   }
@@ -33,6 +88,14 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
 
   void _cancel() {
     Navigator.pop(context, false);
+  }
+
+  void _resetPinCreation() {
+    setState(() {
+      pin = "";
+      _confirmPin = null;
+      _isConfirming = false;
+    });
   }
 
   Widget _buildPinDots() {
@@ -61,6 +124,18 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
         margin: const EdgeInsets.all(8),
         width: 70,
         height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Text(
           label,
           style: const TextStyle(
@@ -91,19 +166,20 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             TextButton(
-              onPressed: _cancel,
-              child: const Text(
-                "Cancel",
-                style: TextStyle(
+              onPressed: _isConfirming ? _resetPinCreation : _cancel,
+              child: Text(
+                _isConfirming ? "Recommencer" : "Annuler",
+                style: const TextStyle(
                   fontSize: 16,
                   color: Color(0xFF004A99),
-                ),    
+                ),
               ),
             ),
             _buildKeyboardButton("0", onPressed: () => _addDigit("0")),
             IconButton(
               onPressed: _deleteDigit,
               icon: const Icon(Icons.backspace, color: Color(0xFF004A99)),
+              iconSize: 28,
             ),
           ],
         )
@@ -116,7 +192,12 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FA),
       appBar: AppBar(
-        title: const Text("PIN", style: TextStyle(color: Colors.white)),
+        title: Text(
+          widget.isCreating 
+              ? (_isConfirming ? "Confirmer PIN" : "Créer PIN") 
+              : "Entrer PIN",
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
@@ -127,16 +208,31 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            "Enter PIN",
-            style: TextStyle(
-              fontSize: 24,
+          Text(
+            widget.isCreating
+                ? (_isConfirming 
+                    ? "Confirmez votre code PIN" 
+                    : "Créez un code PIN à 4 chiffres")
+                : "Entrez votre code PIN",
+            style: const TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF003366), // Titre en blanc
+              color: Color(0xFF003366),
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
           _buildPinDots(),
+          if (_isConfirming) ...[
+            const SizedBox(height: 10),
+            const Text(
+              "Veuillez saisir à nouveau le même code",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ],
           const SizedBox(height: 40),
           _buildKeyboard(),
         ],

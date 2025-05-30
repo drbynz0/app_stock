@@ -1,3 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:cti_app/screens/pin_code_screen.dart';
+import 'package:cti_app/screens/settings_pages/about_section.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,10 +17,41 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final secureStorage = const FlutterSecureStorage();
   bool pinEnabled = false;
   bool fingerprintEnabled = false;
   bool notificationsEnabled = true; // <== Pour gérer les notifications
 
+  @override
+  void initState() {
+    super.initState();
+    loadPinSetting();
+  }
+
+  Future<void> loadPinSetting() async {
+    final enabled = await secureStorage.read(key: 'pin_enabled');
+    setState(() {
+      pinEnabled = enabled == 'true';
+    });
+  }
+
+  Future<void> togglePin(bool value) async {
+    setState(() {
+      pinEnabled = value;
+    });
+    await secureStorage.write(key: 'pin_enabled', value: value.toString());
+
+    if (value) {
+      // Rediriger vers l'écran de création du PIN si activé
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PinCodeScreen(isCreating: true)),
+      );
+    } else {
+      // Supprimer l'ancien PIN si désactivé (optionnel)
+      await secureStorage.delete(key: 'user_pin');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,11 +118,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.info,
                 title: 'Version',
                 subtitle: '1.0.0',
-              ),
-              _buildSettingsTile(
-                icon: Icons.help,
-                title: 'Aide & Support',
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutSection()),
+                ),
               ),
             ],
           ),

@@ -19,7 +19,9 @@ class EditEmployeDialog extends StatefulWidget {
 }
 
 class _EditEmployeDialogState extends State<EditEmployeDialog> {
-  late final TextEditingController _nameController;
+  late final TextEditingController _usernameController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late String _privilege;
@@ -30,7 +32,9 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.employee['username']);
+    _usernameController = TextEditingController(text: widget.employee['username']);
+    _firstNameController = TextEditingController(text: widget.employee['first_name']);
+    _lastNameController = TextEditingController(text: widget.employee['last_name']);
     _emailController = TextEditingController(text: widget.employee['email']);
     _phoneController = TextEditingController(text: widget.employee['phone'] ?? '');
     _privilege = widget.employee['user_type'];
@@ -38,7 +42,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -47,11 +51,16 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
+          final updatedData = {
+            'username': _usernameController.text,
+            'first_name': _firstNameController.text,
+            'last_name': _lastNameController.text,
+            'email': _emailController.text,
+            'phone': _phoneController.text,
+          };
       await UserController.updateUser(
         widget.employee['id'],
-        _nameController.text,
-        _emailController.text,
-        _privilege,
+        updatedData,
       );
       widget.onEmployeeUpdated();
       Navigator.pop(context);
@@ -100,9 +109,9 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _nameController,
+              controller: _usernameController,
               decoration: InputDecoration(
-                labelText: 'Nom complet',
+                labelText: 'Nom d\'utilisateur',
                 labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -113,6 +122,40 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
                 ),
                 prefixIcon: Icon(Icons.person, color: AppConstant.PRIMARY_COLOR),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _firstNameController,
+              decoration: InputDecoration(
+                labelText: 'Prénom',
+                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
+                ),
+                prefixIcon: Icon(Icons.person, color: AppConstant.PRIMARY_COLOR),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _lastNameController,
+              decoration: InputDecoration(
+                labelText: 'Nom',
+                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
+                ),
+                prefixIcon: Icon(Icons.person_outline, color: AppConstant.PRIMARY_COLOR),
               ),
             ),
             const SizedBox(height: 16),

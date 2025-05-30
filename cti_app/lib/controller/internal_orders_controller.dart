@@ -95,4 +95,59 @@ class InternalOrdersController {
       }
       return true;
   }
+
+  // Récupérer les paiements d'une commande interne
+  static Future<List<Payments>> fetchPaymentsOrder() async {
+    final response = await http.get(
+      Uri.parse(baseUrl),
+      headers: await ApiService.headers(),
+    );
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      final List<dynamic> paymentsData = responseData['payments'] ?? [];
+      final List<Payments> payments = paymentsData.map((e) => Payments.fromJson(e)).toList();
+      return payments;
+    } else {
+      throw Exception('Erreur lors de la récupération du profil utilisateur : ${response.body}');
+    }
+  }
+
+  // Ajout d'un paiement à une commande interne
+  static Future<bool> addPayment(int orderId, Payments payment) async {
+    final response = await http.patch(
+      Uri.parse('$baseUrl$orderId/'),
+      headers: await ApiService.headers(),
+      body: jsonEncode({
+        'payments': [payment.toJson()],
+      }),
+    );
+    if (response.statusCode == 201) {
+      return true;
+    } else {
+      throw Exception('Erreur lors de l\'ajout du paiement: ${response.body}');
+    }
+  }
+  static Future<bool> deletePayment(int orderId, int paymentId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl$orderId/payments/$paymentId/'),
+      headers: await ApiService.headers(),
+    );
+    if (response.statusCode == 204) {
+      return true;
+    } else {
+      throw Exception('Erreur lors de la suppression du paiement: ${response.body}');
+    }
+  }
+  static Future<bool> updatePayment(int orderId, Payments payment) async {
+    final response = await http.patch(
+      Uri.parse('$baseUrl$orderId/payments/${payment.id}/'),
+      headers: await ApiService.headers(),
+      body: jsonEncode(payment.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Erreur lors de la mise à jour du paiement: ${response.body}');
+    }
+  } 
 }

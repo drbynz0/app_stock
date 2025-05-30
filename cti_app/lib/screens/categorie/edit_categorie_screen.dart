@@ -1,4 +1,6 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/controller/category_controller.dart';
 import '/models/category.dart';
 
@@ -10,6 +12,7 @@ Future<void> showEditCategorieDialog(
   final TextEditingController nameController = TextEditingController(text: categorie.name);
   final TextEditingController descController = TextEditingController(text: categorie.description);
   final formKey = GlobalKey<FormState>();
+  final theme = Provider.of<ThemeProvider>(context, listen: false);
 
   return showDialog(
     context: context,
@@ -22,13 +25,8 @@ Future<void> showEditCategorieDialog(
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.backgroundColor,
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade100],
-          ),
         ),
         child: Form(
           key: formKey,
@@ -45,7 +43,7 @@ Future<void> showEditCategorieDialog(
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade800,
+                      color: theme.titleColor,
                     ),
                   ),
                 ],
@@ -57,17 +55,8 @@ Future<void> showEditCategorieDialog(
                 controller: nameController,
                 decoration: InputDecoration(
                   labelText: 'Nom',
-                  prefixIcon: Icon(Icons.label, color: Colors.blue.shade600),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
-                  ),
+                  prefixIcon: Icon(Icons.label, color: theme.iconColor),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
                 ),
                 validator: (value) => value!.isEmpty ? 'Ce champ est obligatoire' : null,
               ),
@@ -79,17 +68,8 @@ Future<void> showEditCategorieDialog(
                 maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  prefixIcon: Icon(Icons.description, color: Colors.blue.shade600),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.grey.shade400),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
-                  ),
+                  prefixIcon: Icon(Icons.description),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
                 ),
               ),
               const SizedBox(height: 25),
@@ -120,7 +100,7 @@ Future<void> showEditCategorieDialog(
                     icon: const Icon(Icons.save, size: 20),
                     label: const Text('Enregistrer'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
+                      backgroundColor: theme.buttonColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(

@@ -1,5 +1,7 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '/models/factures.dart';
 import '/models/internal_order.dart';
 import '/models/client.dart';
@@ -32,7 +34,6 @@ class InternalFactureDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Détail Facture', style: TextStyle(color: Colors.white)),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: const Color(0xFF003366),
         centerTitle: true,
         elevation: 0,
         actions: [
@@ -53,13 +54,13 @@ class InternalFactureDetailScreen extends StatelessWidget {
           children: [
             _buildHeader(),
             const SizedBox(height: 24),
-            _buildClientCard(),
+            _buildClientCard(context),
             const SizedBox(height: 24),
-            _buildProductList(order),
+            _buildProductList(context, order),
             const SizedBox(height: 24),
             _buildAmountSection(totalHT, tva, totalTTC),
             const SizedBox(height: 24),
-            _buildPaymentStatus(paidAmount, remainingAmount),
+            _buildPaymentStatus(context, paidAmount, remainingAmount),
             const SizedBox(height: 24),
             _buildFooter(),
           ],
@@ -92,9 +93,10 @@ class InternalFactureDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildClientCard() {
+  Widget _buildClientCard(BuildContext context) {
     final order = internalOrders.firstWhere((order) => order.orderNum == facture.orderNum, orElse: () => InternalOrder.empty());
     final client = clients.firstWhere((client) => client.id == order.clientId, orElse: () => Client.empty());
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Card(
       elevation: 2,
@@ -104,8 +106,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('CLIENT',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
+            Text('CLIENT',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.titleColor)),
             const Divider(),
             const SizedBox(height: 8),
             _buildInfoRow('Nom', facture.clientName),
@@ -130,7 +132,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductList(InternalOrder order) {
+  Widget _buildProductList(BuildContext context, InternalOrder order) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -139,19 +142,20 @@ class InternalFactureDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ARTICLES',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
+            Text('ARTICLES',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.titleColor)),
             const Divider(),
             const SizedBox(height: 8),
-            ...order.items.map((item) => _buildProductItem(item)),
+            ...order.items.map((item) => _buildProductItem(context, item)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProductItem(OrderItem item) {
+  Widget _buildProductItem(BuildContext context, OrderItem item) {
     final total = item.unitPrice * item.quantity;
+    final theme = Provider.of<ThemeProvider>(context, listen: false);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -164,7 +168,7 @@ class InternalFactureDetailScreen extends StatelessWidget {
               children: [
                 Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('Réf: ${item.productRef}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text('Réf: ${item.productRef}', style: TextStyle(color: theme.secondaryTextColor)),
               ],
             ),
           ),
@@ -200,7 +204,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentStatus(double paidAmount, double remainingAmount) {
+  Widget _buildPaymentStatus(BuildContext context, double paidAmount, double remainingAmount) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -208,8 +213,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const Text('STATUT DE PAIEMENT',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
+            Text('STATUT DE PAIEMENT',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.titleColor)),
             const Divider(),
             const SizedBox(height: 8),
             _buildAmountRow('Montant payé:', paidAmount),
@@ -250,7 +255,7 @@ class InternalFactureDetailScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: isTotal ? 18 : 14,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-                color: isTotal ? const Color(0xFF003366) : Colors.black,
+                color: isTotal ? const Color.fromARGB(255, 29, 147, 74) : const Color.fromARGB(255, 79, 161, 199),
               )),
         ],
       ),

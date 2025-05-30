@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:cti_app/services/activity_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
@@ -30,6 +31,9 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
   String _searchQuery = '';
   int _currentPage = 1;
   final int _itemsPerPage = 10;
+  
+  Map<String, dynamic>? myPrivileges = {};
+  Map<String, dynamic>? userData = {};
 
   @override
   void initState() {
@@ -37,13 +41,27 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir les commandes
   Future<void> _refreshOption() async {
-    final updatedOrder = await ExternalOrdersController.fetchOrders();
+    final appData = Provider.of<AppData>(context, listen: false);
 
-    setState(() {
-      _orders = updatedOrder;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
     });
+
+    if (appData.externalOrders.isEmpty) {
+      await appData.fetchExternalOrders();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
+    if (mounted) {
+      setState(() {
+        _orders = appData.externalOrders;
+      });
+    }
   }
 
   List<ExternalOrder> get _filteredOrders {
@@ -65,6 +83,8 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
+    final appData = Provider.of<AppData>(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -82,7 +102,6 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              // ignore: deprecated_member_use
                               color: theme.shadowColor,
                               spreadRadius: 2,
                               blurRadius: 5,
@@ -96,7 +115,6 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
                             hintText: 'Rechercher des commandes...',
                             hintStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                            border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           onChanged: (value) {
@@ -111,38 +129,63 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
                     const SizedBox(width: 8),
 
                     // Bouton de filtrage par date
-                    IconButton(
-                      icon: Icon(Icons.calendar_today, color: theme.iconColor),
-                      onPressed: () async {
-                        final DateTime? selectedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (selectedDate != null) {
-                          final filteredOrders = ExternalOrder.getExternalOrderList()
-                              .where((order) {
-                                return order.date.year == selectedDate.year &&
-                                    order.date.month == selectedDate.month &&
-                                    order.date.day == selectedDate.day;
-                              }).toList();
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme.searchBar,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.shadowColor,
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.calendar_today, color: theme.iconColor),
+                        onPressed: () async {
+                          final DateTime? selectedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                            builder: (BuildContext context, Widget? child) {
+                              return theme.themeData.brightness == Brightness.dark
+                                ? Theme(
+                                    data: ThemeData.dark(),
+                                    child: child!,
+                                  )
+                                : Theme(
+                                    data: ThemeData.light(),
+                                    child: child!,
+                                  );
+                            },
+                          );
+                          if (selectedDate != null) {
+                            final filteredOrders = _orders
+                                .where((order) {
+                                  return order.date.year == selectedDate.year &&
+                                      order.date.month == selectedDate.month &&
+                                      order.date.day == selectedDate.day;
+                                }).toList();
 
-                          if (filteredOrders.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Aucune commande trouvée pour le ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          } else {
-                            setState(() {
-                              _orders = filteredOrders;
-                              _currentPage = 1; // Retour à la première page
-                            });
+                            if (filteredOrders.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Aucune commande trouvée pour le ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            } else {
+                              setState(() {
+                                _orders = filteredOrders;
+                                _currentPage = 1;
+                              });
+                            }
                           }
-                        }
-                      },
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -152,11 +195,10 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
                   itemCount: _paginatedOrders.length,
                   itemBuilder: (context, index) {
                     final order = _paginatedOrders[index];
-                    return _buildOrderCard(order);
+                    return _buildOrderCard(appData, order);
                   },
                 ),
               ),
-              // Nouvelle pagination
               Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
@@ -196,101 +238,95 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
           Positioned(
             right: 20,
             bottom: 120,
-              child: IconButton(
-                onPressed: () async {
-                  try {
-                    // 1. Vérification des permissions
-                    if (Platform.isAndroid) {
-                      final status = await Permission.storage.status;
-                      if (!status.isGranted) {
-                        await Permission.storage.request();
-                      }
+            child: IconButton(
+              onPressed: () async {
+                try {
+                  if (Platform.isAndroid) {
+                    final status = await Permission.storage.status;
+                    if (!status.isGranted) {
+                      await Permission.storage.request();
                     }
+                  }
 
-                    // 2. Génération du PDF
-                    final pdfBytes = await ExternalOrderlistPdfservice.generateExternalOrdersPdf(_orders);
+                  final pdfBytes = await ExternalOrderlistPdfservice.generateExternalOrdersPdf(_orders);
 
-                    // 3. Vérification du répertoire de stockage
-                    final directory = await getExternalStorageDirectory();
-                    if (directory == null) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Impossible d\'accéder au stockage'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                      return;
-                    }
-
-                    // 4. Création du sous-dossier si nécessaire
-                    final folder = Directory('${directory.path}/Pfe');
-                    if (!await folder.exists()) {
-                      await folder.create(recursive: true);
-                    }
-
-                    // 5. Sauvegarde du fichier
-                    final filePath = '${folder.path}/commandes_internes_${DateTime.now().millisecondsSinceEpoch}.pdf';
-                    final file = File(filePath);
-                    await file.writeAsBytes(pdfBytes);
-
-                    // 6. Vérification que le fichier existe bien
-                    if (!await file.exists()) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Échec de la création du fichier'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                      return;
-                    }
-
-                    // 7. Ouverture du fichier avec gestion d'erreur
-                    final result = await OpenFile.open(filePath);
-                    
+                  final directory = await getExternalStorageDirectory();
+                  if (directory == null) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(result.type == ResultType.done
-                            ? 'PDF sauvegardé dans : ${file.path}'
-                            : "Erreur: ${result.message}"),
-                          backgroundColor: result.type == ResultType.done ? Colors.green : Colors.orange,
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Erreur grave: ${e.toString()}'),
+                        const SnackBar(
+                          content: Text('Impossible d\'accéder au stockage'),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
+                    return;
                   }
-                },
-                icon: Icon(Icons.download, color: theme.iconColor, size: 30),
-              ),
-            ),
-          Positioned(
-            right: 15,
-            bottom: 60,
-            child: FloatingActionButton(
-              onPressed: () => _showAddExternalOrderDialog(),
-              backgroundColor: theme.buttonColor,
-              elevation: 4,
-              child: const Icon(Icons.add, color: Colors.white),
+
+                  final folder = Directory('${directory.path}/Pfe');
+                  if (!await folder.exists()) {
+                    await folder.create(recursive: true);
+                  }
+
+                  final filePath = '${folder.path}/commandes_externes_${DateTime.now().millisecondsSinceEpoch}.pdf';
+                  final file = File(filePath);
+                  await file.writeAsBytes(pdfBytes);
+
+                  if (!await file.exists()) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Échec de la création du fichier'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  final result = await OpenFile.open(filePath);
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result.type == ResultType.done
+                          ? 'PDF sauvegardé dans : ${file.path}'
+                          : "Erreur: ${result.message}"),
+                        backgroundColor: result.type == ResultType.done ? Colors.green : Colors.orange,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erreur grave: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: Icon(Icons.download, color: theme.iconColor, size: 30),
             ),
           ),
+          if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_externalorder'] ?? false))
+            Positioned(
+              right: 15,
+              bottom: 60,
+              child: FloatingActionButton(
+                onPressed: () => _showAddExternalOrderDialog(appData),
+                backgroundColor: theme.buttonColor,
+                elevation: 4,
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildOrderCard(ExternalOrder order) {
+  Widget _buildOrderCard(AppData appData, ExternalOrder order) {
     final theme = Provider.of<ThemeProvider>(context);
     return GestureDetector(
       onTap: () async {
@@ -321,19 +357,23 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
                 children: [
                   Text(order.orderNum, style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
-                  Text('${order.date.day}/${order.date.month}/${order.date.year}', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('${order.date.day}/${order.date.month}/${order.date.year}', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ],
               ),
               Row(
                 children: [
-                  Text('Articles: ${order.items.length}', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('Articles: ${order.items.length}', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
-                  Text('${order.totalPrice.toStringAsFixed(2)} DH', style: TextStyle(color: theme.secondaryTextColor)),
+                  Text('${order.totalPrice.toStringAsFixed(2)} DH', 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ],
               ),
               Row(
                 children: [
-                  Text(_getPaymentMethodText(order.paymentMethod), style: TextStyle(color: theme.secondaryTextColor)),
+                  Text(_getPaymentMethodText(order.paymentMethod), 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                   const Spacer(),
                   Text(
                     _getStatusText(order.status),
@@ -345,19 +385,25 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
               )
             ],
           ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () => _showEditDialog(order),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _showDeleteDialog(order),
-              ),
-            ],
-          ),
+          trailing: ((userData?['is_staff'] ?? false) || 
+                   (myPrivileges?['edit_externalorder'] ?? false) || 
+                   (myPrivileges?['delete_externalorder'] ?? false))
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_externalorder'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _showEditDialog(appData, order),
+                      ),
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_externalorder'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _showDeleteDialog(appData, order),
+                      ),
+                  ],
+                )
+              : null,
         ),
       ),
     );
@@ -382,15 +428,16 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
     }
   }
 
-  void _showAddExternalOrderDialog() {
+  void _showAddExternalOrderDialog(AppData appData) {
     showDialog(
       context: context,
       builder: (context) => AddExternalOrderScreen(
-        onOrderAdded: (newProduct) {
-          _refreshOption();
+        onOrderAdded: (newOrder) async {
+          await appData.fetchExternalOrders();
+          await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Commande ajouté avec succès'),
+              content: Text('Commande ajoutée avec succès'),
               backgroundColor: Colors.green,
             ),
           );
@@ -400,14 +447,14 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
     );
   }
 
-  void _showDeleteDialog(ExternalOrder order) {
+  void _showDeleteDialog(AppData appData, ExternalOrder order) {
     showDialog(
       context: context,
       builder: (context) => DeleteOrderDialog(
         orderId: order.orderNum,
         onConfirm: () async {
             if (order.id != null) {
-              await _handleDeleteOrder(order);
+              await _handleDeleteOrder(appData, order);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -422,27 +469,24 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
     );
   }
 
-  Future<void> _handleDeleteOrder(ExternalOrder order) async {
+  Future<void> _handleDeleteOrder(AppData appData, ExternalOrder order) async {
     try {
-      // Afficher l'indicateur de chargement
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
-      // 1. Suppression via API
+      
       final success = await ExternalOrdersController.deleteOrder(order.id!);
       
-      // 2. Fermer l'indicateur
       if (mounted) Navigator.pop(context);
       
-      // 3. Mise à jour UI
       if (success && mounted) {
-        await _refreshOption(); // Rafraîchir toute la liste
-        
+        await appData.fetchExternalOrders();
+        await _refreshOption();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Commande de ${order.supplierName} supprimé avec succès'),
+            content: Text('Commande de ${order.supplierName} supprimée avec succès'),
             backgroundColor: Colors.red,
           ),
         );
@@ -452,7 +496,7 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Fermer l'indicateur en cas d'erreur
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: ${e.toString()}'),
@@ -463,16 +507,17 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
     }
   }
 
-  void _showEditDialog(ExternalOrder order) {
+  void _showEditDialog(AppData appData, ExternalOrder order) {
     showDialog(
       context: context,
       builder: (context) => EditExternalOrderScreen(
         order: order,
-        onOrderUpdated: (updatedProduct) {
-          _refreshOption();
+        onOrderUpdated: (updatedOrder) async {
+          await appData.fetchExternalOrders();
+          await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Produit mis à jour avec succès'), 
+              content: Text('Commande mise à jour avec succès'),
               backgroundColor: Colors.green,
             ),
           );

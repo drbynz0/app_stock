@@ -52,9 +52,22 @@ class HistoricalController {
 
   // ❌ DELETE
   static Future<void> deleteActivity(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl$id/'));
+    final response = await http.delete(
+      Uri.parse('$_baseUrl$id/'),
+      headers: await ApiService.headers(),
+      );
     if (response.statusCode != 204) {
-      throw Exception('Erreur lors de la suppression');
+      throw Exception('Erreur lors de la suppression de l’activité : ${response.body}');
+    }
+  }
+
+  static Future<void> deleteAllActivities() async {
+    final response = await http.delete(
+      Uri.parse(_baseUrl),
+      headers: await ApiService.headers(),
+    );
+    if (response.statusCode != 204) {
+      throw Exception('Erreur lors de la suppression de toutes les activités : ${response.body}');
     }
   }
 

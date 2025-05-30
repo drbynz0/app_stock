@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -162,7 +163,6 @@ class AddProductScreenState extends State<AddProductScreen> {
           width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.6,
           decoration: BoxDecoration(
-            color: Colors.black,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Stack(
@@ -236,6 +236,7 @@ class AddProductScreenState extends State<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
@@ -257,20 +258,20 @@ class AddProductScreenState extends State<AddProductScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.add_shopping_cart, size: 32, color: Colors.blue.shade800),
+                          Icon(Icons.add_shopping_cart, size: 32, color: theme.iconColor),
                           const SizedBox(width: 10),
                           Text(
                             'Nouveau Produit',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade800,
+                              color: theme.titleColor,
                             ),
                           ),
                         ],
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: Colors.blue.shade800),
+                        icon: Icon(Icons.close, color: theme.iconColor),
                         onPressed: _isLoading ? null : () => Navigator.pop(context),
                       ),
                     ],
@@ -284,7 +285,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade800,
+                      color: theme.titleColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -303,10 +304,10 @@ class AddProductScreenState extends State<AddProductScreen> {
                         onTap: () => _pickImage(index),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: theme.searchBar,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.blue.shade800.withOpacity(0.3),
+                              color: theme.borderColor,
                               width: 2,
                             ),
                           ),
@@ -314,11 +315,10 @@ class AddProductScreenState extends State<AddProductScreen> {
                               ? Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.add_a_photo, size: 30, color: Colors.blue.shade800),
+                                    Icon(Icons.add_a_photo, size: 30),
                                     const SizedBox(height: 8),
                                     Text(
                                       'Image ${index + 1}',
-                                      style: TextStyle(color: Colors.blue.shade800),
                                     ),
                                   ],
                                 )
@@ -347,11 +347,11 @@ class AddProductScreenState extends State<AddProductScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
+                              borderSide: BorderSide(color: theme.borderColor),
                             ),
-                            prefixIcon: Icon(Icons.code, color: Colors.blue.shade800),
+                            prefixIcon: Icon(Icons.code),
                             filled: true,
-                            fillColor: Colors.grey.shade50,
+                            fillColor: theme.textFieldColor,
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -365,7 +365,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       Container(
                         margin: const EdgeInsets.only(top: 5),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade800,
+                          color: theme.backgroundColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: IconButton(
@@ -383,7 +383,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                               );
                             }
                           },
-                          icon: const Icon(Icons.barcode_reader, color: Colors.white),
+                          icon: const Icon(Icons.barcode_reader),
                         ),
                       ),
                     ],
@@ -405,7 +405,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.shopping_bag, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -431,7 +431,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.inventory, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -461,7 +461,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.branding_watermark, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -487,7 +487,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.attach_money, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -517,7 +517,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.inventory_2, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -548,8 +548,6 @@ class AddProductScreenState extends State<AddProductScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     initialValue: _preSelectedCategory,
                     isRequired: true,
-                    dropdownColor: Colors.grey.shade50,
-                    style: TextStyle(color: Colors.blue.shade800),
                   ),
                   const SizedBox(height: 16),
 
@@ -568,7 +566,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                       ),
                       prefixIcon: Icon(Icons.description, color: Colors.blue.shade800),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: theme.textFieldColor,
                     ),
                     maxLines: 3,
                   ),

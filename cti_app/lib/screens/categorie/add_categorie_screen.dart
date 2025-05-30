@@ -1,17 +1,22 @@
+import 'package:cti_app/services/category_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
-import '/controller/category_controller.dart';
+import 'package:provider/provider.dart';
 import '/models/category.dart';
 
 Future<void> showAddCategorieDialog(
   BuildContext context,
   VoidCallback onSuccess,
 ) async {
+    final theme = Provider.of<ThemeProvider>(context , listen: false);
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   return showDialog(
     context: context,
+    
     barrierDismissible: false,
     builder: (context) => Dialog(
       shape: RoundedRectangleBorder(
@@ -21,13 +26,8 @@ Future<void> showAddCategorieDialog(
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.backgroundColor,
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade100],
-          ),
         ),
         child: Form(
           key: formKey,
@@ -38,7 +38,7 @@ Future<void> showAddCategorieDialog(
                 // En-tête avec icône
                 Row(
                   children: [
-                    Icon(Icons.add_circle, size: 32, color: Colors.blue.shade800,
+                    Icon(Icons.add_circle, size: 32, color: theme.iconColor,
 ),
                     const SizedBox(width: 10),
                     Text(
@@ -46,7 +46,7 @@ Future<void> showAddCategorieDialog(
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade800,
+                        color: theme.titleColor,
                       ),
                     ),
                   ],
@@ -59,7 +59,7 @@ Future<void> showAddCategorieDialog(
                   decoration: InputDecoration(
                     labelText: 'Nom*',
                     hintText: 'Saisissez le nom de la catégorie',
-                    prefixIcon: Icon(Icons.category, color: Colors.blue.shade800),
+                    prefixIcon: Icon(Icons.category),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: Colors.grey.shade400),
@@ -69,7 +69,6 @@ Future<void> showAddCategorieDialog(
                       borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                     ),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
                   ),
                   validator: (value) => value!.isEmpty ? 'Le nom est obligatoire' : null,
                 ),
@@ -82,7 +81,7 @@ Future<void> showAddCategorieDialog(
                   decoration: InputDecoration(
                     labelText: 'Description',
                     hintText: 'Description optionnelle',
-                    prefixIcon: Icon(Icons.description, color: Colors.blue.shade800),
+                    prefixIcon: Icon(Icons.description),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: Colors.grey.shade400),
@@ -92,7 +91,6 @@ Future<void> showAddCategorieDialog(
                       borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                     ),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
                   ),
                 ),
                 const SizedBox(height: 25),
@@ -123,7 +121,7 @@ Future<void> showAddCategorieDialog(
                       icon: const Icon(Icons.add_task, size: 20),
                       label: const Text('Créer'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade800,
+                        backgroundColor: theme.buttonColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -151,7 +149,8 @@ Future<void> showAddCategorieDialog(
                             description: descController.text.trim(),
                           );
 
-                          await CategoryController.addCategorie(newCategorie);
+                          final categoryService = Provider.of<CategoryService>(context, listen: false);
+                          final _ = categoryService.addCategory(newCategorie);
 
                           if (context.mounted) {
                             Navigator.pop(context); // Fermer le loader
@@ -160,7 +159,7 @@ Future<void> showAddCategorieDialog(
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Catégorie "${newCategorie.name}" créée'),
+                                content: Text('Catégorie "${newCategorie.name}" créée', style: TextStyle(color: Colors.white)),
                                 backgroundColor: Colors.green.shade600,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(

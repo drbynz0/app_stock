@@ -1,4 +1,6 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/client.dart';
 
 class DeleteClientScreen extends StatelessWidget {
@@ -23,16 +25,16 @@ class DeleteClientScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: theme.dialogColor,
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -67,15 +69,14 @@ class DeleteClientScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
               ),
             ),
             const SizedBox(height: 16),
 
             // Détails du client
-            _buildDetailRow('Nom', client.name),
-            _buildDetailRow('Email', client.email),
-            _buildDetailRow('Téléphone', client.phone),
+            _buildDetailRow(context, 'Nom', client.name),
+            _buildDetailRow(context, 'Email', client.email),
+            _buildDetailRow(context, 'Téléphone', client.phone),
             const SizedBox(height: 24),
 
             // Boutons d'action
@@ -87,7 +88,6 @@ class DeleteClientScreen extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: BorderSide(color: Colors.grey.shade300),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -95,8 +95,8 @@ class DeleteClientScreen extends StatelessWidget {
                     child: Text(
                       'Annuler',
                       style: TextStyle(
-                        color: Colors.grey[800],
                         fontWeight: FontWeight.w500,
+                        color: theme.textColor,
                       ),
                     ),
                   ),
@@ -131,7 +131,8 @@ class DeleteClientScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final theme = Provider.of<ThemeProvider>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -142,7 +143,7 @@ class DeleteClientScreen extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: theme.secondaryTextColor,
                 fontWeight: FontWeight.w500,
               ),
             ),

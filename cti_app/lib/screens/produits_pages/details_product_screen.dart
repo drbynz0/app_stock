@@ -2,7 +2,9 @@
 
 import 'package:cti_app/controller/discount_controller.dart';
 import 'package:cti_app/models/discounts.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/controller/product_controller.dart';
 import '../../models/product.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -42,7 +44,6 @@ class DetailsProductScreenState extends State<DetailsProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(product.name, style: const TextStyle(color: Colors.white)),
       ),
@@ -215,14 +216,15 @@ class DetailsProductScreenState extends State<DetailsProductScreen> {
   }
 
   Widget _buildSectionHeader(String title) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.blue,
+          color: theme.titleColor,
         ),
       ),
     );

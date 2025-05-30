@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cti_app/services/alert_service.dart';
 import 'package:flutter/material.dart';
 import '/models/product.dart';
 import '/models/external_order.dart';
@@ -46,6 +47,15 @@ class AddExternalArticleDialogState extends State<AddExternalArticleDialog> {
   }
 
   void _submitSelection() {
+    for (final entry in _selectedProducts.entries) {
+      final product = widget.availableProducts.firstWhere((p) => p.code == entry.key);
+      if (product.stock == 0 || entry.value > product.stock) {
+        AlertService.showAlert(context: context, title: 'Erreur', message:  product.stock == 0
+                ? 'Stock épuisé pour ${product.name}'
+                : 'Stock insuffisant pour ${product.name} (stock: ${product.stock})');
+        return;
+      }
+    }
     final selectedItems = _selectedProducts.entries.map((entry) {
       final product = widget.availableProducts.firstWhere((p) => p.code == entry.key);
       return OrderItem(

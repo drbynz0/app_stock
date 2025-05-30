@@ -11,8 +11,8 @@ class AppConstant {
   static const String USER_EMAIL = "user_email_halal_food_app";
 
   // api
-  // static const String BASE_FILE = "http://192.168.66.128:8001";
   static const String BASE_FILE = "http://127.0.0.1:8000";
+  //static const String BASE_FILE = "https://drbynz00.pythonanywhere.com";
 
   static const String BASE_URL = "$BASE_FILE/api/";
 
@@ -21,6 +21,9 @@ class AppConstant {
   static const String SELLER_URI = "sellers/";
   static const String TOKEN_URI = "token/";
   static const String LOGIN_URI = "login-view/";
+  static const String PASSWORD_RESET = "password_reset/";
+  static const String VERIFY_PASSWORD = "password_reset/verify/";
+  static const String SAVE_PASSWORD = "password_reset/save/";
   static const String BANNER_URI = "banners/";
   static const String STORE_URI = "stores/";
   static const String SECTION_URI = "sections/";

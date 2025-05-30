@@ -1,24 +1,21 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:cti_app/controller/category_controller.dart';
-import 'package:cti_app/controller/login_controller.dart';
-import 'package:cti_app/controller/user_controller.dart';
+
+import 'package:cti_app/controller/product_controller.dart';
+import 'package:cti_app/services/activity_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import '/controller/product_controller.dart';
 import '/models/category.dart';
-import '/services/activity_service.dart';
-import 'add_product_screen.dart';
 import '/models/product.dart';
+import 'add_product_screen.dart';
 import 'delete_product_screen.dart';
 import 'edit_product_screen.dart';
 import 'details_product_screen.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-
 
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
@@ -28,14 +25,14 @@ class ProductManagementScreen extends StatefulWidget {
 }
 
 class ProductManagementScreenState extends State<ProductManagementScreen> {
-  List<Product> products = [];
+  List<Product> _products = [];
   Category? _selectedCategory;
   String _searchQuery = '';
   int _currentPage = 1;
   final int _itemsPerPage = 10;
-  List<Category> categories = [];
+  
   Map<String, dynamic>? myPrivileges = {};
-
+  Map<String, dynamic>? userData = {};
 
   @override
   void initState() {
@@ -43,22 +40,37 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir les produits
   Future<void> _refreshOption() async {
-    final availablePrivileges = await UserController.fetchUserPrivileges();
-    final updatedProducts = await ProductController.fetchProducts();
-    categories = await CategoryController.fetchCategories();
-    setState(() {
-      myPrivileges = availablePrivileges;
-      products = updatedProducts;
+    final appData = Provider.of<AppData>(context, listen: false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
     });
+
+    if (appData.products.isEmpty) {
+      await appData.fetchProducts();
+    }
+    if (appData.categories.isEmpty) {
+      await appData.fetchCategories();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
+    if (mounted) {
+      setState(() {
+        _products = appData.products;
+      });
+    }
   }
 
   List<Product> get filteredProducts {
-    return products.where((product) {
+    return _products.where((product) {
       final matchesSearch = product.name.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesCategory = _selectedCategory == null || 
-      product.category.name.toString() == _selectedCategory!.name.toString();
+          product.category.name.toString() == _selectedCategory!.name.toString();
       return matchesSearch && matchesCategory;
     }).toList();
   }
@@ -72,8 +84,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     );
   }
 
-
-    Future<String?> _scanBarcode() async {
+  Future<String?> _scanBarcode() async {
     final cameraStatus = await Permission.camera.request();
     if (cameraStatus != PermissionStatus.granted) {
       return null;
@@ -111,7 +122,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                 top: 16,
                 right: 16,
                 child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(Icons.close, color: Colors.white),
                   onPressed: () {
                     Navigator.pop(context);
                     completer.complete(null);
@@ -130,8 +141,8 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
-    setState(() {
-    });
+    final appData = Provider.of<AppData>(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -145,7 +156,6 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      // ignore: deprecated_member_use
                       color: theme.shadowColor,
                       spreadRadius: 2,
                       blurRadius: 5,
@@ -158,7 +168,6 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                     hintText: 'Rechercher des produits...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   onChanged: (value) {
@@ -177,10 +186,8 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                     // Sélecteur de catégorie
                     Expanded(
                       flex: 3,
-                      child: 
-                        _buildCategoryDropdown(),
+                      child: _buildCategoryDropdown(appData),
                     ),
-                    // Bouton Exporter
                   ],
                 ),
               ),
@@ -201,8 +208,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                             ),
                           ),
                         ).then((_) {
-                          setState(() { 
-                          });
+                          setState(() {});
                         }); 
                       },
                       child: Card(
@@ -223,155 +229,151 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
                               product.images[0],
-                               // AppConstant.DEFAULT_IMAGE,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.image_not_supported, color: Colors.grey);
-                                },
-                              ),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.image_not_supported, color: Colors.grey);
+                              },
                             ),
                           ),
-                          title: Text(
-                            product.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Wrap(
-                                children: [
-                                  Text(
-                                    product.category.name,
-                                    style: TextStyle(
-                                      color: theme.secondaryTextColor,
-                                    ),
+                        ),
+                        title: Text(
+                          product.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              children: [
+                                Text(
+                                  product.category.name,
+                                  style: TextStyle(
+                                    color: theme.secondaryTextColor,
                                   ),
-                                  const SizedBox(width: 5,),
-                                  Text(product.available == true ? 'Publié' : 'Non publié', 
-                                    style: TextStyle(
-                                      color: product.available == true ? Colors.green : Colors.red,
-                                    ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(product.available == true ? 'Publié' : 'Non publié', 
+                                  style: TextStyle(
+                                    color: product.available == true ? Colors.green : Colors.red,
                                   ),
-
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Wrap(
-                                children: [
-                                  Text(
-                                    '${product.stock} en stock',
-                                    style: TextStyle(
-                                      color: product.stock <= 10 ? Colors.red : Colors.green,
-                                    ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              children: [
+                                Text(
+                                  '${product.stock} en stock',
+                                  style: TextStyle(
+                                    color: product.stock <= 10 ? Colors.red : Colors.green,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    '${product.price.toStringAsFixed(2)} MAD',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  '${product.price.toStringAsFixed(2)} MAD',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (myPrivileges!['edit_product'] ?? true)
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_product'] ?? false))
                               IconButton(
                                 icon: const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => _showEditDialog(index),
+                                onPressed: () => _showEditDialog(appData, product),
                               ),
-                              if (myPrivileges!['delete_product'] ?? true)
+                            if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_product'] ?? false))
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed:  () => _showDeleteDialog(product),
+                                onPressed: () => _showDeleteDialog(appData, product),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 60),
-              // Pagination
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.grey.shade300)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${filteredProducts.length} éléments',
-                      style: TextStyle(color: Colors.grey[600]),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          'Page $_currentPage/${(filteredProducts.length / _itemsPerPage).ceil()}',
-                        ),
-                        const SizedBox(width: 16),
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: _currentPage > 1
-                              ? () => setState(() => _currentPage--)
-                              : null,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.arrow_forward),
-                          onPressed: _currentPage < (filteredProducts.length / _itemsPerPage).ceil()
-                              ? () => setState(() => _currentPage++)
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Bouton de scanne produit
-          AuthController.isadmin == 'ADMIN' || (myPrivileges!['add_product'] ?? true)
-              ? buildButtonScan(120) 
-              : buildButtonScan(60),
-            if ((AuthController.isadmin == 'ADMIN') || (myPrivileges!['add_product'] ?? true))
-            Positioned(
-              right: 15,
-              bottom: 60,
-              child: FloatingActionButton(
-                onPressed: _showAddProductDialog,
-                backgroundColor: theme.buttonColor,
-                elevation: 4,
-                child: const Icon(Icons.add, color: Colors.white),
+                  );
+                },
               ),
             ),
+            const SizedBox(height: 60),
+            // Pagination
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${filteredProducts.length} éléments',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'Page $_currentPage/${(filteredProducts.length / _itemsPerPage).ceil()}',
+                      ),
+                      const SizedBox(width: 16),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: _currentPage > 1
+                            ? () => setState(() => _currentPage--)
+                            : null,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward),
+                        onPressed: _currentPage < (filteredProducts.length / _itemsPerPage).ceil()
+                            ? () => setState(() => _currentPage++)
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        // Bouton de scanne produit
+        if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_product'] ?? false))
+          buildButtonScan(120),
+        if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_product'] ?? false))
+          Positioned(
+            right: 15,
+            bottom: 60,
+            child: FloatingActionButton(
+              onPressed: () => _showAddProductDialog(appData),
+              backgroundColor: theme.buttonColor,
+              elevation: 4,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryDropdown() {
-    
+  Widget _buildCategoryDropdown(AppData appData) {
     return DropdownButtonFormField<Category>(
       value: _selectedCategory,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Catégorie',
         border: OutlineInputBorder(),
       ),
       items: [
-        DropdownMenuItem(
+        const DropdownMenuItem(
           value: null,
           child: Text('Toutes les catégories')),
-        ...categories.map((categorie) {
+        ...appData.categories.map((category) {
           return DropdownMenuItem(
-            value: categorie,
-            child: Text(categorie.name),
+            value: category,
+            child: Text(category.name),
           );
         }),
       ],
@@ -382,17 +384,15 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     );
   }
 
-
-
-  void _showAddProductDialog() {
+  void _showAddProductDialog(AppData appData) {
     showDialog(
       context: context,
       builder: (context) => AddProductScreen(
         onProductAdded: (newProduct) async {
-          // actualiser la liste des produits
-            await _refreshOption();
+          await appData.fetchProducts();
+          await _refreshOption();
+          
           if (mounted) {
-
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('${newProduct.name} ajouté avec succès'),
@@ -400,28 +400,48 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context); // Fermer le dialogue après l'ajout
+            Navigator.pop(context);
             
-            // 3. Ajouter à l'historique d'activité
             Provider.of<ActivityService>(context, listen: false)
               .addActivity("Ajout produit: ${newProduct.name}", 'add');
+          }
+        },
+      ),
+    );
+  }
+
+  void _showDeleteDialog(AppData appData, Product product) {
+    showDialog(
+      context: context,
+      builder: (context) => DeleteProductScreen(
+        product: product,
+        onDeleteConfirmed: () async {
+          if (product.id != null) {
+            await ProductController.deleteProduct(product.id!);
+            await appData.fetchProducts();
+            await _refreshOption();
+            
+            Provider.of<ActivityService>(context, listen: false).addActivity(
+              "Suppression du produit : ${product.name}",
+              'shopping_bag',
+            );
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${product.name} supprimé avec succès'), 
+                  duration: const Duration(seconds: 3), 
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           } else {
-              showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Erreur'),
-                  content: const Text('Erreur lors de l\'ajout du produit'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Ferme la boîte de dialogue
-                      },
-                    ),
-                  ],
-                );
-              },
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Erreur : ID du produit est null'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
             );
           }
         },
@@ -429,68 +449,22 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     );
   }
 
-  
-
-  void _showDeleteDialog(Product produit) {
-    try {
-    showDialog(
-      context: context,
-      builder: (context) => DeleteProductScreen(
-        product: produit,
-        onDeleteConfirmed: () async {
-            if (produit.id != null) {
-              await ProductController.deleteProduct(produit.id!);             
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Erreur : ID du produit est null'),
-                  backgroundColor: Colors.red,
-                  duration: Duration(seconds: 3),
-                ),
-              );
-            }
-            Provider.of<ActivityService>(context, listen: false).addActivity(
-              "Suppression du produit : ${produit.name}",
-              'shopping_bag',
-            );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${produit.name} supprimé avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.red,),
-          );
-        },
-      ),
-    );
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context); // Fermer l'indicateur en cas d'erreur
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }      
-    }
-  }
-
-  void _showEditDialog(int index) {
-    final productIndex = products.indexOf(paginatedProducts[index]);
+  void _showEditDialog(AppData appData, Product product) {
     showDialog(
       context: context,
       builder: (context) => EditProductScreen(
-        product: products[productIndex],
+        product: product,
         onProductUpdated: (updatedProduct) async {
-          // 1. Rafraîchir la liste complète
+          await appData.fetchProducts();
           await _refreshOption();
           
-          // 2. Afficher le feedback
           if (mounted) {
-            Navigator.pop(context); // Fermer l'indicateur en cas d'erreur
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Produit "${updatedProduct.name}" mis à jour'),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 3),
-            ),
+              ),
             );
             
             Provider.of<ActivityService>(context, listen: false)
@@ -507,15 +481,13 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
       bottom: bottom,
       child: IconButton(
         onPressed: () async {
-          final scannedBarcode = await _scanBarcode(); // Appel de la méthode _scanBarcode
+          final scannedBarcode = await _scanBarcode();
           if (scannedBarcode != null) {
             try {
-              // Recherche du produit correspondant
-              final matchingProduct = products.firstWhere(
+              final matchingProduct = _products.firstWhere(
                 (product) => product.code == scannedBarcode,
               );
 
-              // Afficher un message de succès
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Produit trouvé : ${matchingProduct.name}'),
@@ -524,7 +496,6 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                 ),
               );
 
-              // Naviguer vers les détails du produit scanné
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -532,7 +503,6 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
                 ),
               );
             } catch (e) {
-              // Afficher un message d'erreur si aucun produit n'est trouvé
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Aucun produit trouvé pour le code $scannedBarcode'),
@@ -542,7 +512,6 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
               );
             }
           } else {
-            // Afficher un message si le scan est annulé
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Scan annulé'),
@@ -552,7 +521,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
             );
           }
         },
-        icon: const Icon(Icons.barcode_reader, color: Color.fromARGB(255, 18, 65, 85), size: 30),
+        icon: const Icon(Icons.barcode_reader, size: 30),
       ),
     );
   }

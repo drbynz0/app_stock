@@ -1,5 +1,6 @@
 from django.urls import path # type: ignore
 from rest_framework.authtoken.views import ObtainAuthToken # type: ignore
+from rest_framework_simplejwt.views import TokenRefreshView
 
 obtain_auth_token = ObtainAuthToken.as_view() # For the mobile app
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path('sellers/delete/<int:pk>/', SellerDeleteView.as_view(), name='seller-delete'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('sellers/details/', SellerDashboard.as_view(), name='seller-dashboard'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

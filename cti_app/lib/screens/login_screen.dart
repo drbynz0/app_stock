@@ -2,7 +2,7 @@ import 'package:cti_app/controller/login_controller.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'forgot_pass_screen.dart';
+import 'password_pages/forgot_pass_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -168,7 +168,7 @@ void _showErrorDialog(String message) {
                 SizedBox(  
                   width: double.infinity,
                   child: GestureDetector( 
-                    onTap: _isLoading ? null : _login,  // Appel de la fonction de connexion
+                    onTap: _isLoading ? null : _login,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200), 
                       curve: Curves.easeInOut,
@@ -205,42 +205,7 @@ void _showErrorDialog(String message) {
                             ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {},                    // Action à définir pour le bouton "S'inscrire"
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFFDDDDDD)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/image/google_logo.png',
-                          height: 18,
-                          width: 18,
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Continuer avec Google',
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40), // Espacement supplémentaire en bas
+                ), // Espacement supplémentaire en bas
               ],
             ),
           ),

@@ -9,7 +9,6 @@ class CategorieDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Détails de la Catégorie'
             , style: TextStyle(color: Colors.white)), 
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(

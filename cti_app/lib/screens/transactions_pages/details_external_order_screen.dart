@@ -3,9 +3,11 @@
 import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:cti_app/controller/supplier_controller.dart';
 import 'package:cti_app/models/external_order.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/models/factures.dart';
 import 'package:cti_app/models/supplier.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../fourns_pages/supplier_details_screen.dart';
 import '../../services/pdfexternel_service.dart';
@@ -39,11 +41,10 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
 
     // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-    final getSupplier = await SupplierController.getSupplierById(order.supplierId!);
+     supplier = Provider.of<AppData>(context, listen: false).getSupplierById(order.supplierId!);
     final availableSuppliers = await SupplierController.getSuppliers();
     final availableOrders = await ExternalOrdersController.fetchOrders();
     setState(() {
-      supplier = getSupplier;
       suppliers = availableSuppliers;
       orders = availableOrders;
     });

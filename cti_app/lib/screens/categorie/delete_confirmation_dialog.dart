@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/controller/category_controller.dart';
 import '/models/category.dart';
 
@@ -9,6 +11,7 @@ Future<void> showDeleteConfirmationDialog(
   Category category,  // Renommé de 'categorie' à 'category' pour la cohérence
   VoidCallback onDeleted,
 ) async {
+  final theme = Provider.of<ThemeProvider>(context, listen: false);
   return showDialog(
     context: context,
     barrierDismissible: false,  // Empêche la fermeture en cliquant à l'extérieur
@@ -21,17 +24,10 @@ Future<void> showDeleteConfirmationDialog(
         backgroundColor: Colors.transparent,
         child: Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                spreadRadius: 3,
-              ),
-            ],
-          ),
+        decoration: BoxDecoration(
+          color: theme.backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -56,7 +52,7 @@ Future<void> showDeleteConfirmationDialog(
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade800,
+                  color: theme.titleColor,
                 ),
               ),
               const SizedBox(height: 16),
@@ -112,8 +108,12 @@ Future<void> showDeleteConfirmationDialog(
                           // Feedback visuel
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Catégorie "${category.name}" supprimée'),
+                              content: Text('Catégorie "${category.name}" supprimée', style: TextStyle(color: Colors.white)),
                               backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           );
                         } catch (e) {

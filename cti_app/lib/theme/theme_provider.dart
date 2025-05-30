@@ -24,6 +24,8 @@ class ThemeProvider with ChangeNotifier {
   Color get searchBar => _isDarkMode ? Colors.grey.shade800 : Colors.white;
   Color get barNavColor => _isDarkMode ? Colors.black87 : const Color.fromARGB(255, 217, 248, 247);
   Color get titleColor => _isDarkMode ? Colors.white : const Color(0xFF003366);
+  Color get textFieldColor => _isDarkMode ? Colors.grey.shade800 : const Color.fromARGB(255, 255, 255, 255);
+  Color get dialogColor => _isDarkMode ? Colors.grey.shade800 : Colors.white;
 
 
   ThemeData get themeData {
@@ -51,6 +53,30 @@ class ThemeProvider with ChangeNotifier {
         secondary: buttonColor,
         surface: cardColor,
       ),
+      iconTheme: IconThemeData(color: iconColor),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: textFieldColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
     );
   }
 
@@ -72,6 +98,22 @@ class ThemeProvider with ChangeNotifier {
         primary: primaryColor,
         secondary: buttonColor,
         surface: cardColor,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: textFieldColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
       ),
     );
   }

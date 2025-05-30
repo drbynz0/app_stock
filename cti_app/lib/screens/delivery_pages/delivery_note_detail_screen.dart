@@ -1,7 +1,9 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cti_app/models/delivery_note.dart';
 import 'package:cti_app/services/delivery_note_service.dart';
+import 'package:provider/provider.dart';
 
 
 class DeliveryNoteDetailScreen extends StatelessWidget {
@@ -11,14 +13,12 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     final currencyFormatter = NumberFormat.currency(locale: 'fr', symbol: 'DH', decimalDigits: 3);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
-
         title: const Text(
           'Bon de Livraison',
           style: TextStyle(color: Colors.white),
@@ -27,10 +27,9 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.print, color: Colors.white),
             onPressed: () async {
-  final service = DeliveryNoteService();
-  await service.printDeliveryNote(note);
-},
-
+              final service = DeliveryNoteService();
+              await service.printDeliveryNote(note);
+            },
           ),
         ],
       ),
@@ -41,25 +40,29 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
             _buildSectionCard(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.person, color: Colors.blue),
+                  leading: const Icon(Icons.person),
                   title: Text(note.clientName,
                       style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(note.clientAddress),
+                  subtitle: Text(note.clientAddress, 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.calendar_today, color: Colors.blue),
+                  leading: const Icon(Icons.calendar_today),
                   title: const Text("Date"),
-                  subtitle: Text(_formatDate(note.date!)),
+                  subtitle: Text(_formatDate(note.date!), 
+                      style: TextStyle(color: theme.secondaryTextColor)),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.badge, color: Colors.blue),
+                  leading: const Icon(Icons.badge),
                   title: const Text("Préparé par"),
-                  subtitle: Text(note.preparedBy),
+                  subtitle: Text(note.preparedBy, 
+                      style: TextStyle(color: theme.secondaryTextColor)
+                    ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildArticlesCard(note),
+            _buildArticlesCard(context, note),
             const SizedBox(height: 16),
             _buildSectionCard(
               children: [
@@ -73,7 +76,7 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
                     Text(
                       currencyFormatter.format(note.totalAmount),
                       style: TextStyle(
-                        color: Colors.blue.shade900,
+                        color: theme.titleColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -123,7 +126,8 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildArticlesCard(DeliveryNote note) {
+  Widget _buildArticlesCard(BuildContext context, DeliveryNote note) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -132,11 +136,11 @@ class DeliveryNoteDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ARTICLES',
+            Text('ARTICLES',
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF003366))),
+                    color: theme.titleColor)),
             const Divider(),
             const SizedBox(height: 8),
             ...note.items.map((item) => _buildProductItem(item)),

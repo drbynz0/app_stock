@@ -32,17 +32,11 @@ class UserController {
     }
   }
 
-static Future<bool> addUser(String name, String email, String password, String? phone, String role) async {
+static Future<bool> addUser(Map<String, dynamic> user) async {
   final response = await http.post(
     Uri.parse('${baseUrl}create/'),
     headers: await ApiService.headers(),
-    body: jsonEncode({
-      'username': name,
-      'email': email,
-      'password': password,
-      'user_type': role,
-      'phone': phone,
-    }),
+    body: jsonEncode(user),
   );
   if (response.statusCode == 201) {
     return response.statusCode == 201;
@@ -52,15 +46,11 @@ static Future<bool> addUser(String name, String email, String password, String? 
 }
 
 
-  static Future<bool> updateUser(int id, String name, String email, String role) async {
+  static Future<bool> updateUser(int id, Map<String, dynamic> updatedData) async {
     final response = await http.patch(
       Uri.parse('${baseUrl}update/$id/'),
       headers: await ApiService.headers(),
-      body: jsonEncode({
-        'username': name,
-        'email': email,
-        'type_user': role,
-      }),
+      body: jsonEncode(updatedData),
     );
     if (response.statusCode == 200) {
     return response.statusCode == 200;
@@ -77,6 +67,19 @@ static Future<bool> addUser(String name, String email, String password, String? 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       return responseData;
+    } else {
+      throw Exception('Erreur lors de la récupération du profil utilisateur : ${response.body}');
+    }
+  }
+
+  static Future<bool> editUserProfile(Map<String, dynamic> updatedData) async {
+    final response = await http.patch(
+      Uri.parse('${AppConstant.BASE_URL}profile/'),
+      headers: await ApiService.headers(),
+      body: jsonEncode(updatedData),
+    );
+    if (response.statusCode == 200) {
+      return true;
     } else {
       throw Exception('Erreur lors de la récupération du profil utilisateur : ${response.body}');
     }

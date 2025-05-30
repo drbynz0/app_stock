@@ -1,5 +1,7 @@
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:provider/provider.dart';
 import '/models/discounts.dart';
 import '/models/product.dart';
 import '/services/share_discount_service.dart';
@@ -40,7 +42,6 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
           style: TextStyle(fontSize: 20, color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color(0xFF003366),
       ),
       body: Column(
         children: [
@@ -124,6 +125,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
   }
 
   Widget _buildProductInfoSection(int discountPercentage) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -141,7 +143,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
             product.category.name,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: theme.secondaryTextColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -162,6 +164,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
   }
 
   Widget _buildPriceSection(int discountPercentage) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Wrap(
       spacing: 16,
       runSpacing: 8,
@@ -178,7 +181,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
           '${discount.normalPrice.toStringAsFixed(2)} MAD',
           style: TextStyle(
             fontSize: 28,
-            color: Colors.grey[600],
+            color: theme.secondaryTextColor,
             decoration: TextDecoration.lineThrough,
           ),
         ),
@@ -216,7 +219,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
         const SizedBox(height: 8),
         Text(
           'Ref : ${discount.id}',
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16,),
         ),
         Text(
           discount.description,
@@ -285,6 +288,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
     required String label,
     required String value,
   }) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -293,7 +297,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
           const SizedBox(width: 12),
           Text(
             label,
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(color: theme.secondaryTextColor),
           ),
           const SizedBox(width: 8),
           Text(
@@ -306,6 +310,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
   }
 
   Widget _buildActionButtons() {
+    final theme = Provider.of<ThemeProvider>(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -313,10 +318,10 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.link, color: Colors.black),
-                label: const Text(
+                icon: Icon(Icons.link, color: theme.iconColor),
+                label: Text(
                   'Voir dans le site',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: theme.textColor),
                 ),
                 onPressed: () {
                   // Action pour voir dans le site
@@ -330,7 +335,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Icons.share, color: Colors.white),
-            label: const Text(
+            label: Text(
               'Partager',
               style: TextStyle(color: Colors.white),
             ),

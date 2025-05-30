@@ -1,14 +1,17 @@
-import 'package:cti_app/controller/category_controller.dart';
+// ignore_for_file: deprecated_member_use
+
+import 'package:cti_app/controller/discount_controller.dart';
+import 'package:cti_app/models/category.dart';
+import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
-import '/controller/discount_controller.dart';
-import '/controller/product_controller.dart';
+import 'package:provider/provider.dart';
 import '/models/discounts.dart';
 import '/models/product.dart';
 import 'add_discounts.dart';
 import 'edit_discounts.dart';
 import 'delete_discounts.dart';
 import 'details_discount_screen.dart';
-
 
 class DiscountsManagementScreen extends StatefulWidget {
   const DiscountsManagementScreen({super.key});
@@ -18,77 +21,113 @@ class DiscountsManagementScreen extends StatefulWidget {
 }
 
 class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
-
-    List<Product> products = [];
-
   List<Discount> _discounts = [];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  
+  Map<String, dynamic>? myPrivileges = {};
+  Map<String, dynamic>? userData = {};
 
-    @override
+  @override
   void initState() {
     super.initState();
     _loadOption();
   }
 
   Future<void> _loadOption() async {
-    final fetchDiscounts = await DiscountController.getDiscounts();
-    final fetchedProducts = await ProductController.fetchProducts();
-    setState(() {
-      _discounts = fetchDiscounts;
-      products = fetchedProducts;
+    final appData = Provider.of<AppData>(context, listen: false);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        appData.refreshDataService(context);
+      }
     });
+
+    if (appData.discounts.isEmpty) {
+      await appData.fetchDiscounts();
+    }
+    if (appData.products.isEmpty) {
+      await appData.fetchProducts();
+    }
+
+    myPrivileges = appData.myPrivileges;
+    userData = appData.userData;
+
+    if (mounted) {
+      setState(() {
+        _discounts = appData.discounts;
+      });
+    }
   }
 
-  void _addDiscount(Discount discount) {
-    _loadOption();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Promotion Ajouté avec succès'), duration: const Duration(seconds: 3), backgroundColor: Colors.green,),
-    );
+  void _addDiscount(Discount discount) async {
+    final appData = Provider.of<AppData>(context, listen: false);
+    await appData.fetchDiscounts();
+    await _loadOption();
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Promotion ajoutée avec succès'),
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
-  void _editDiscount(Discount updatedDiscount) {
-    _loadOption();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+  void _editDiscount(Discount updatedDiscount) async {
+    final appData = Provider.of<AppData>(context, listen: false);
+    await appData.fetchDiscounts();
+    await _loadOption();
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
           content: Text('Promotion mise à jour avec succès'),
           backgroundColor: Colors.green,
         ),
       );
-    Navigator.pop(context);
+      Navigator.pop(context);
+    }
   }
 
-  void _deleteDiscount(int? discountId) {
-    final discount = Discount.getDiscountById(discountId);
+  void _deleteDiscount(int? discountId) async {
+    final appData = Provider.of<AppData>(context, listen: false);
+    final discount = _discounts.firstWhere((d) => d.id == discountId);
+    
     setState(() {
       bool inPromo = true;
       final discountController = DiscountController();
       discountController.applyDiscountToProduct(inPromo, discount.productId, discount.promotionPrice);
     });
+    
+    await appData.fetchDiscounts();
+    await _loadOption();
   }
 
   List<Discount> get _filteredDiscounts {
     if (_searchQuery.isEmpty) return _discounts;
     return _discounts.where((discount) {
+      final Category category = AppData().getCategoryById(discount.productCategoryId!);
       return discount.productName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          CategoryController.fetchCategorieNameById(discount.productCategoryId).toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          category.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           discount.promotionPrice.toString().contains(_searchQuery);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-    });
+    //final theme = Provider.of<ThemeProvider>(context);
+    final appData = Provider.of<AppData>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Promotions en cours', style: TextStyle(fontSize: 20, color: Colors.white)),
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
-          // Barre de recherche
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -96,9 +135,6 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
               decoration: InputDecoration(
                 hintText: 'Rechercher par nom ou catégorie...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
               ),
               onChanged: (value) {
                 setState(() {
@@ -108,19 +144,21 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
             ),
           ),
           Expanded(
-            child: _buildDiscountsList(),
+            child: _buildDiscountsList(appData),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDiscountDialog(),
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: ((userData?['is_staff'] ?? false) || (myPrivileges?['add_discount'] ?? false))
+          ? FloatingActionButton(
+              onPressed: () => _showAddDiscountDialog(),
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
     );
   }
 
-  Widget _buildDiscountsList() {
+  Widget _buildDiscountsList(AppData appData) {
     if (_filteredDiscounts.isEmpty) {
       return Center(
         child: Column(
@@ -147,14 +185,15 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
       itemCount: _filteredDiscounts.length,
       itemBuilder: (context, index) {
         final discount = _filteredDiscounts[index];
-        return _buildDiscountCard(discount);
+        return _buildDiscountCard(appData, discount);
       },
     );
   }
 
-  Widget _buildDiscountCard(Discount discount) {
+  Widget _buildDiscountCard(AppData appData, Discount discount) {
+    final theme = Provider.of<ThemeProvider>(context);
     final discountPercentage = ((discount.normalPrice - discount.promotionPrice) / discount.normalPrice * 100).round();
-    Product product = products.firstWhere(
+    final product = appData.products.firstWhere(
       (p) => p.id == discount.productId,
       orElse: () => Product.empty(),
     );
@@ -166,13 +205,12 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
           MaterialPageRoute(
             builder: (context) => DetailsDiscountScreen(
               discount: discount,
-              product: product, // Fonction à implémenter
+              product: product,
             ),
           ),
         );
       },
       child: Card(
-        color: const Color.fromARGB(255, 194, 224, 240),
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -181,7 +219,6 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
           padding: const EdgeInsets.all(5),
           child: Row(
             children: [
-              // Image du produit
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
@@ -192,13 +229,10 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-
-              // Détails du produit
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nom et pourcentage
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -216,7 +250,6 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            // ignore: deprecated_member_use
                             color: Colors.red.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -234,16 +267,13 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
                     Text(
                       product.category.name,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: theme.secondaryTextColor,
                         fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 8),
-
-                    // Prix
                     Wrap(
-                      spacing: 16, // Espacement horizontal entre les éléments
-                      runSpacing: 8, // Espacement vertical entre les lignes
+                      spacing: 16,
                       children: [
                         Text(
                           '${discount.promotionPrice.toStringAsFixed(2)} MAD',
@@ -263,24 +293,24 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),
-
-              // Actions
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _showEditDiscountDialog(discount),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _showDeleteDiscountDialog(discount),
-                  ),
-                ],
-              ),
+              if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_discount'] ?? false) || (myPrivileges?['delete_discount'] ?? false))
+                Column(
+                  children: [
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_discount'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _showEditDiscountDialog(discount),
+                      ),
+                    if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_discount'] ?? false))
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _showDeleteDiscountDialog(discount),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -288,7 +318,7 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
     );
   }
 
-    void _showAddDiscountDialog() {
+  void _showAddDiscountDialog() {
     showDialog(
       context: context,
       builder: (context) => AddDiscountScreen(
@@ -297,15 +327,15 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
     );
   }
 
-void _showEditDiscountDialog(Discount discount) {
-  showDialog(
-    context: context,
-    builder: (context) => EditDiscountScreen(
-      discount: discount,
-      onEditDiscount: _editDiscount,
-    ),
-  );
-}
+  void _showEditDiscountDialog(Discount discount) {
+    showDialog(
+      context: context,
+      builder: (context) => EditDiscountScreen(
+        discount: discount,
+        onEditDiscount: _editDiscount,
+      ),
+    );
+  }
 
   void _showDeleteDiscountDialog(Discount discount) {
     showDialog(
