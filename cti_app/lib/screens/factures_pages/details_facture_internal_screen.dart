@@ -1,3 +1,4 @@
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,8 +22,9 @@ class InternalFactureDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final order = internalOrders.firstWhere((order) => order.orderNum == facture.orderNum, orElse: () => InternalOrder.empty());
-    final client = clients.firstWhere((client) => client.id == order.clientId, orElse: () => Client.empty());
+    AppData appData = AppData();
+    final order = appData.getInternalOrderByOrderNum(facture.orderNum);
+    final client = appData.getClientById(order.clientId!);
 
     final double totalHT = facture.amount;
     final double tva = totalHT * 0.20;

@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/customer_controller.dart';
-import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/services/alert_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -141,11 +141,21 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
           description: _descriptionController.text,
           status: _status,
           items: _items,
+          payments: [],
           updated: DateTime.now(),
         );
 
-        final updatedOrder = await InternalOrdersController.updateOrder(widget.order.id!, updateOrder);
-
+        final appData = Provider.of<AppData>(context, listen: false);
+        final updatedOrder = await appData.updateInternalOrder(widget.order.id!, updateOrder);
+        // Mettre à jour le paiement
+        final newPayment = Payments(
+          order: widget.order.id!,
+          totalPaid: paidPrice,
+          paymentMethod: _paymentMethod,
+          note: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+        );
+        // Ajouter le paiement à la commande
+        appData.addPayment(widget.order.id!, newPayment);
         if (_type == TypeOrder.online) {
           _updateDeliveryNote(updatedOrder);
         }

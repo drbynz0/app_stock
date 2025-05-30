@@ -12,7 +12,7 @@ class ClientDetailsScreen extends StatelessWidget {
   ClientDetailsScreen({
     super.key,
     required this.client, required List internalOrders,
-  }) : internalOrders = InternalOrder.getInternalOrderList();
+  }) : internalOrders = List<InternalOrder>.from(internalOrders);
 
   @override
   Widget build(BuildContext context) {

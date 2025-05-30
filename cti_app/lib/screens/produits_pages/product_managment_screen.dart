@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/services/activity_service.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -417,7 +416,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
         product: product,
         onDeleteConfirmed: () async {
           if (product.id != null) {
-            await ProductController.deleteProduct(product.id!);
+            appData.deleteProduct(product.id!);
             await appData.fetchProducts();
             await _refreshOption();
             

@@ -15,6 +15,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
     with WidgetsBindingObserver {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   bool _shouldCheckAuth = true;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -45,10 +46,11 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
 
     final bool isLoggedIn = token != null;
     final bool hasPin = pin != null && pin.length == 4;
+    final bool isPinEnabled = await _secureStorage.read(key: 'pin_enabled') == 'true';
 
-    if (!isLoggedIn && hasPin && mounted) {
+    if (isLoggedIn && isPinEnabled && hasPin && _navigatorKey.currentState != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushAndRemoveUntil(
+        _navigatorKey.currentState?.pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => const PinCodeScreen(),
             fullscreenDialog: true,
@@ -61,6 +63,10 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
+      home: widget.child,
+    );
   }
 }

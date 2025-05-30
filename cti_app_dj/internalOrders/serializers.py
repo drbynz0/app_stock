@@ -11,6 +11,24 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ['id', 'order', 'amount', 'payment_method', 'date', 'description']
+        read_only_fields = ['id', 'date']
+        
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Le montant doit être positif")
+        return value
+
+class PaymentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['amount', 'payment_method', 'description']
+
+class InternalOrderPaymentSerializer(serializers.ModelSerializer):
+    payments = PaymentSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = InternalOrder
+        fields = ['id', 'order_num', 'payments']
 
 class InternalOrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)

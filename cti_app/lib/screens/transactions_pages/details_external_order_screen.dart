@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/external_orders_controller.dart';
-import 'package:cti_app/controller/supplier_controller.dart';
 import 'package:cti_app/models/external_order.dart';
 import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/models/factures.dart';
 import 'package:cti_app/models/supplier.dart';
@@ -29,6 +29,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
   Supplier supplier = Supplier.empty();
   List<Supplier> suppliers = [];
   List<ExternalOrder> orders = [];
+  AppData appData = AppData();
 
 
 
@@ -41,12 +42,11 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
 
     // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-     supplier = Provider.of<AppData>(context, listen: false).getSupplierById(order.supplierId!);
-    final availableSuppliers = await SupplierController.getSuppliers();
-    final availableOrders = await ExternalOrdersController.fetchOrders();
+    appData = Provider.of<AppData>(context, listen: false);
+     supplier = appData.getSupplierById(order.supplierId!);
     setState(() {
-      suppliers = availableSuppliers;
-      orders = availableOrders;
+      suppliers = appData.suppliers;
+      orders = appData.externalOrders;
     });
   }
 
@@ -55,7 +55,6 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
     final totalPrice = order.items.fold(0.0, (sum, item) => sum + (item.unitPrice * item.quantity));
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Achat avec ${order.supplierName}', style: const TextStyle(color: Colors.white)),
         actions: [
@@ -85,7 +84,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SupplierDetailsScreen(supplier: supplier),
+                      builder: (context) => SupplierDetailsScreen(supplier: supplier, externalOrders: orders),
                     ),
                   );
                 } else {
@@ -158,14 +157,15 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
   }
 
   Widget _buildSectionHeader(String title) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF003366),
+          color: theme.titleColor
         ),
       ),
     );
@@ -173,7 +173,6 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
 
   Widget _buildInfoCard({required List<Widget> children}) {
     return Card(
-      color: const Color.fromARGB(255, 194, 224, 240),
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -239,6 +238,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
   }
 
   Widget _buildDescriptionCard(double total) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
@@ -248,7 +248,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Notes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
+               Text('Notes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.titleColor)),
               const SizedBox(height: 8),
               Text(
                 order.description != null && order.description!.isNotEmpty
@@ -266,7 +266,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
   Widget _buildAllPrice() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -309,7 +309,7 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
         Text(
           value,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -429,15 +429,16 @@ class DetailsExternalOrderScreenState extends State<DetailsExternalOrderScreen> 
 }
 
 void _sendConfirmation(BuildContext context) {
+  final theme = Provider.of<ThemeProvider>(context, listen: false);
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('Confirmer réception'),
       content: const Text('Voulez-vous confirmer la réception de cette commande?'),
       actions: [
-        TextButton(
+        ElevatedButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Annuler'),
+          child: Text('Annuler', style: TextStyle(color: Colors.red)),
         ),
         ElevatedButton(
           onPressed: () async {
@@ -457,7 +458,7 @@ void _sendConfirmation(BuildContext context) {
                 order.status = OrderStatus.completed;
               });
 
- // Construire le message détaillé
+              // Construire le message détaillé
               StringBuffer message = StringBuffer();
               message.writeln('Bonjour ${order.supplierName},\n');
               message.writeln('Nous confirmons la réception de la commande n°${order.orderNum}.');
@@ -500,7 +501,7 @@ void _sendConfirmation(BuildContext context) {
               );
             }
           },
-          child: const Text('Confirmer'),
+          child: Text('Confirmer', style: TextStyle(color: theme.textColor)),
         ),
       ],
     ),

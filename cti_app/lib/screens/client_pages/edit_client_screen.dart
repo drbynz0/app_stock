@@ -62,10 +62,10 @@ class _EditClientScreenState extends State<EditClientScreen> {
         );
 
         final appData = Provider.of<AppData>(context, listen: false);
-        final _ = appData.updateClient(updateClient);
+        final updatedClient = await appData.updateClient(updateClient);
 
 
-        widget.onEditClient(updateClient);
+        widget.onEditClient(updatedClient);
         
         final activity = Activity (
           description: "Modification du client : ${updateClient.name}",

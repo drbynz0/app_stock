@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
-import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/factures.dart';
@@ -122,8 +121,8 @@ class EditExternalOrderScreenState extends State<EditExternalOrderScreen> {
         items: _items,
       );
 
-      final updatedOrder = await ExternalOrdersController.updateOrder(widget.order.id!, updateOrder);
-
+        final appData = Provider.of<AppData>(context, listen: false);
+        final updatedOrder = await appData.updateExternalOrder(widget.order.id!, updateOrder);
       
       widget.onOrderUpdated(updatedOrder);
 

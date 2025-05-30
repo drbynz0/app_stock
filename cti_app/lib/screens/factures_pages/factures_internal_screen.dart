@@ -1,7 +1,6 @@
-import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/controller/facture_controller.dart';
-import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/models/client.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +21,7 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
   List<FactureClient> internalFactures = [];
   List<InternalOrder> internalOrders = []; // Vous devez récupérer cette liste
   List<Client> clients = []; // Vous devez récupérer cette liste
+  AppData appData = AppData();
 
   @override
   void initState() {
@@ -32,8 +32,8 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
   // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
     final availableFactures = await FactureClientController.getFactures();
-    final availableInternalOrders = await InternalOrdersController.fetchOrders();
-    final availableClients = await CustomerController.getCustomers();
+    final availableInternalOrders = appData.internalOrders;
+    final availableClients = appData.clients;
     setState(() {
       internalFactures = availableFactures;
       internalOrders = availableInternalOrders;

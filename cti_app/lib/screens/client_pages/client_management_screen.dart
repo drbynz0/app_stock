@@ -121,7 +121,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ClientDetailsScreen(client: client, internalOrders: []),
+                              builder: (context) => ClientDetailsScreen(client: client, internalOrders: appData.internalOrders),
                             ),
                           );
                         },
@@ -240,51 +240,59 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
     );
   }
 
-  void _showAddClientDialog(AppData appData) {
-    showDialog(
+  void _showAddClientDialog(AppData appData) async {
+    final result = await showDialog(
       context: context,
       builder: (context) => AddClientScreen(
         onAddClient: (newClient) async {
-          await appData.fetchClients();
+          appData.fetchClients();
           await _refreshOption();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${newClient.name} est Ajouté avec succès'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-
-          Navigator.pop(context);
+          Navigator.pop(context, newClient); // Retourne le nouveau client si ajout réussi
         },
       ),
     );
+
+    if (result != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${result.name} est Ajouté avec succès'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 
-  void _showEditClientDialog(AppData appData, Client client) {
-    showDialog(
+  void _showEditClientDialog(AppData appData, Client client) async {
+    final result = await showDialog(
       context: context,
       builder: (context) => EditClientScreen(
         client: client,
         onEditClient: (updatedClient) async {
-          await appData.fetchClients();
+          appData.fetchClients();
           await _refreshOption();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${client.name} est Modifié avec succès'), backgroundColor: Colors.green),
-          );
-
-          Navigator.pop(context);
+          Navigator.pop(context, true); // Retourne true si modification réussie
         },
       ),
     );
+
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${client.name} est Modifié avec succès', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 
-  void _showDeleteDialog(AppData appData, Client client) {
-    showDialog(
+  void _showDeleteDialog(AppData appData, Client client) async {
+    final result = await showDialog(
       context: context,
       builder: (context) => DeleteClientScreen(
         client: client,
@@ -292,14 +300,21 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
           await CustomerController.deleteCustomer(client.id!);
           await appData.fetchClients();
           await _refreshOption();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${client.name} est supprimé avec succès'), backgroundColor: Colors.red),
-          );
-
-          Navigator.pop(context);
+          Navigator.pop(context, true); // Retourne true si suppression réussie
         },
       ),
     );
+
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${client.name} est supprimé avec succès', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 }

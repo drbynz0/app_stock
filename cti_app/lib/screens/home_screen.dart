@@ -33,6 +33,9 @@ class HomeScreenState extends State<HomeScreen> {
   late final List<Widget> _pages;
   List<InternalOrder> internalOrders = [];
   List<ExternalOrder> externalOrders = [];
+  Map<String, dynamic>? userData;
+   late List<ExternalOrderRecord> externalOrderRecords;
+   late List<InternalOrderRecord> internalOrderRecords;
   late List<SaleRecord> _allRecords;
    int _unreadNotificationsCount = 3;
 
@@ -53,6 +56,8 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _refreshOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
+    appData.refreshDataService(context);
+    await appData.fetchUserData();
     Future.microtask(() async {
       appData.refreshDataService(context);
       final activityService = Provider.of<ActivityService>(context, listen: false);
@@ -68,7 +73,13 @@ class HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomePage() {
     return Consumer<AppData>(
+      
       builder: (context, appData, child) {
+        userData = appData.userData;
+        if (userData == null) {
+          return Center(child: CircularProgressIndicator());
+        }
+          
         final theme = Provider.of<ThemeProvider>(context);
         internalOrders = appData.internalOrders;
         externalOrders = appData.externalOrders;
@@ -109,29 +120,29 @@ class HomeScreenState extends State<HomeScreen> {
                   _buildDashboardCard(
                     icon: Icons.show_chart,
                     label: "Chiffre d'affaire",
-                    value: chiffreAffairePaid.toStringAsFixed(2),
-                    valueColor: Colors.green,
+                    value: userData!['is_admin'] == true ? chiffreAffairePaid.toStringAsFixed(2) : "******",
+                    valueColor: Color.fromARGB(255, 36, 89, 71),
                     backgroundColor: const Color.fromARGB(128, 98, 241, 193),
                   ),
                   _buildDashboardCard(
                     icon: Icons.attach_money,
                     label: "Achat",
                     value: totalExternalOrders.toString(),
-                    valueColor: Color.fromARGB(255, 30, 72, 102),
+                    valueColor: Color.fromARGB(255, 108, 176, 224),
                     backgroundColor: const Color.fromARGB(128, 136, 195, 237),
                   ),
                   _buildDashboardCard(
                     icon: Icons.inventory,
                     label: "Fournisseurs",
                     value: totalSuppliers.toString(),
-                    valueColor: Color.fromARGB(255, 53, 136, 130),
+                    valueColor: Color.fromARGB(255, 87, 189, 184),
                     backgroundColor: const Color.fromARGB(128, 96, 220, 212),
                   ),
                   _buildDashboardCard(
                     icon: Icons.group,
                     label: "Clients",
                     value: totalClients.toString(),
-                    valueColor: Color.fromARGB(255, 46, 118, 68),
+                    valueColor: Color.fromARGB(255, 115, 223, 147),
                     backgroundColor: const Color.fromARGB(128, 125, 240, 159),
                   ),
                 ],
@@ -179,7 +190,7 @@ class HomeScreenState extends State<HomeScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 4),
                             child: ListTile(
-                              leading: Icon(activity.icon, color: Colors.blue.shade900),
+                              leading: Icon(activity.icon, color: theme.iconColor),
                               title: Text(activity.description),
                               subtitle: Text(
                                 '${activity.timestamp.day}/${activity.timestamp.month}/${activity.timestamp.year} - '
@@ -200,7 +211,7 @@ class HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(builder: (_) => const HistoricalPage()),
                             );
                           },
-                          icon: const Icon(Icons.arrow_forward),
+                          icon: Icon(Icons.arrow_forward, color: theme.textColor),
                           label: Text("Afficher plus", 
                             style: TextStyle(fontSize: 16, color: theme.textColor),
                           ),
@@ -227,6 +238,7 @@ class HomeScreenState extends State<HomeScreen> {
     required Color backgroundColor,
   }) {
     final theme = Provider.of<ThemeProvider>(context);
+
     return Container(
       decoration: BoxDecoration(
         color: backgroundColor,

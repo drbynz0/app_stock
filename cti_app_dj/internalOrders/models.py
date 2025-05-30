@@ -32,6 +32,16 @@ class InternalOrder(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def update_payment_status(self):
+        """Met à jour le statut de la commande en fonction des paiements"""
+        if self.remaining_price <= 0:
+            self.status = 'completed'
+        elif self.total_paid > 0:
+            self.status = 'toPay'
+        else:
+            self.status = 'pending'
+        self.save()
 
 class OrderItem(models.Model):
     order = models.ForeignKey(InternalOrder, related_name='items', on_delete=models.CASCADE)
@@ -51,3 +61,15 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment of {self.amount} for Order {self.order.order_num}"
+    
+    def save(self, *args, **kwargs):
+        """Surcharge de save pour mettre à jour les totaux de la commande"""
+        is_new = self.pk is None
+        
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            self.order.total_paid += self.amount
+            self.order.remaining_price = self.order.total_price - self.order.total_paid
+            self.order.update_payment_status()
+            self.order.save()

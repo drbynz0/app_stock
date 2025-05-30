@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '/controller/product_controller.dart';
 import '/models/category.dart';
 import '/services/activity_service.dart';
 import '/services/app_data_service.dart';
@@ -211,7 +210,7 @@ void _submitForm() async {
       return;
     }
 
-    final updatedProduct = Product(
+    final updateProduct = Product(
       id: widget.product.id,
       name: _nameController.text.trim(),
       variants: int.parse(_variantController.text),
@@ -229,7 +228,8 @@ void _submitForm() async {
       updatedAt: DateTime.now(),
     );
 
-    await ProductController.updateProduct(updatedProduct, imagesToUpload);
+        final appData = Provider.of<AppData>(context, listen: false);
+        final updatedProduct = await appData.updateProduct(updateProduct, imagesToUpload);
     
     if (mounted) {
       Navigator.pop(context);

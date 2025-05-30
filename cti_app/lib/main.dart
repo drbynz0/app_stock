@@ -25,14 +25,12 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
 
-  // Vérifie si un PIN est enregistré
   const secureStorage = FlutterSecureStorage();
-  final savedPin = await secureStorage.read(key: 'user_pin');
-  final hasPin = savedPin != null && savedPin.length == 4;
   final authController = AuthController();
-
-   bool isLoggedIn = await authController.isLoggedIn();
+  final bool isLoggedIn = await authController.isLoggedIn();
   final bool isPinEnabled = await secureStorage.read(key: 'pin_enabled') == 'true';
+  final savedPin = await secureStorage.read(key: 'user_pin');
+
   runApp(
     ConnectivityWrapper(
       child: MultiProvider(
@@ -51,9 +49,9 @@ void main() async {
         child: AppLifecycleManager(
           child: MyApp(
             isFirstLaunch: isFirstLaunch,
-            hasPin: hasPin,
             isLoggedIn: isLoggedIn,
             isPinEnabled: isPinEnabled,
+            hasPin: savedPin != null && savedPin.length == 4,
           ),
         ),
       ),
@@ -62,13 +60,18 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   final bool isFirstLaunch;
-  final bool hasPin;
-  final bool isPinEnabled;
   final bool isLoggedIn;
+  final bool isPinEnabled;
+  final bool hasPin;
 
-  const MyApp({super.key, required this.isFirstLaunch, required this.hasPin, required this.isLoggedIn, required this.isPinEnabled});
+  const MyApp({
+    super.key,
+    required this.isFirstLaunch,
+    required this.isLoggedIn,
+    required this.isPinEnabled,
+    required this.hasPin,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +81,16 @@ class MyApp extends StatelessWidget {
 
     if (isFirstLaunch) {
       initialScreen = const WelcomeScreen();
-    } else if (hasPin) {
-      initialScreen = const PinCodeScreen();
+    } else if (isLoggedIn) {
+      if (isPinEnabled && hasPin) {
+        initialScreen = const PinCodeScreen();
+      } else {
+        initialScreen = const HomeScreen();
+      }
     } else {
       initialScreen = const LoginScreen();
     }
+
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
@@ -101,6 +109,5 @@ class MyApp extends StatelessWidget {
         );
       },
     );
-      
   }
 }

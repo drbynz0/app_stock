@@ -27,8 +27,7 @@ import '../models/external_order.dart';
 import '../models/internal_order.dart';
 import '../models/supplier.dart';
 import '../models/product.dart';
-import 'package:provider/provider.dart'; // Assure-toi que c'est bien importé
-
+import 'package:provider/provider.dart';
 
 class AppData extends ChangeNotifier {
   List<Client> _clients = [];
@@ -43,46 +42,36 @@ class AppData extends ChangeNotifier {
   List<Discount> _discounts = [];
   Map<String, dynamic>? _userData = {};
 
-
   AppData() {
-    // Initialisation des données
     _loadInitialData();
   }
 
   Future<void> _loadInitialData() async {
+    _userData = await UserController.fetchUserProfile();
     _clients = await CustomerController.getCustomers();
     _products = await ProductController.fetchProducts();
     _categories = await CategoryController.fetchCategories();
     _externalOrders = await ExternalOrdersController.fetchOrders();
     _internalOrders = await InternalOrdersController.fetchOrders();
-    _payments = await InternalOrdersController.fetchPaymentsOrder();
-    _payments = await InternalOrdersController.fetchPaymentsOrder();
-    _suppliers = await  SupplierController.getSuppliers();
+    _suppliers = await SupplierController.getSuppliers();
     _myPrivileges = await UserController.fetchUserPrivileges();
     _activities = await HistoricalController.getAllHistorical();
     _discounts = await DiscountController.getDiscounts();
-    _userData = await UserController.fetchUserProfile();
     notifyListeners();
-
   }
 
-
-Future<void> refreshDataService(BuildContext context) async {
-  await context.read<ClientService>().fetchClients();
-  await context.read<ProductService>().fetchProducts();
-  await context.read<ExternalOrderService>().fetchExternalOrders();
-  await context.read<InternalOrderService>().fetchPayments();
-  await context.read<InternalOrderService>().fetchInternalOrders();
-  await context.read<DiscountService>().fetchDiscounts();
-  await context.read<CategoryService>().fetchCategories();
-  await context.read<ProfileService>().fetchAvailablePrivileges();
-  await context.read<DiscountService>().fetchDiscounts();
-  await context.read<ProfileService>().fetchUserProfile();
-
-
-  notifyListeners(); // Si tu veux notifier ce service (AppDataService), ok
-}
-
+  Future<void> refreshDataService(BuildContext context) async {
+    await context.read<ClientService>().fetchClients();
+    await context.read<ProductService>().fetchProducts();
+    await context.read<ExternalOrderService>().fetchExternalOrders();
+    await context.read<InternalOrderService>().fetchInternalOrders();
+    await context.read<DiscountService>().fetchDiscounts();
+    await context.read<CategoryService>().fetchCategories();
+    await context.read<ProfileService>().fetchAvailablePrivileges();
+    await context.read<DiscountService>().fetchDiscounts();
+    await context.read<ProfileService>().fetchUserProfile();
+    notifyListeners();
+  }
 
   // Getters
   List<Client> get clients => _clients;
@@ -101,178 +90,231 @@ Future<void> refreshDataService(BuildContext context) async {
     return _suppliers.firstWhere((supplier) => supplier.id == id, orElse: () => Supplier.empty());
   }
 
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des clients
+  // Méthodes pour les clients
   Future<void> fetchClients() async {
     _clients = await CustomerController.getCustomers();
     notifyListeners();
   }
-  void addClient(Client client) async {
+
+  Future<Client> addClient(Client client) async {
     try {
-        await CustomerController.createCustomer(client);
-        _clients.insert(0, client);
-        print('Client ajoutée !');
-      } catch (e) {
-        print('Erreur: $e');
-      }
-    notifyListeners();
-  }
-  void updateClient(Client client) async {
-    try {
-      await CustomerController.updateCustomer(client);
-      int index = _clients.indexWhere((c) => c.id == client.id);
-      if (index != -1) {
-        _clients[index] = client;
-        print('Client mise à jour !');
-      }
+      final createdClient = await CustomerController.createCustomer(client);
+      _clients.insert(0, createdClient);
+      print('Client ajouté !');
+      notifyListeners();
+      return createdClient;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteClient(int id) async {
+
+  Future<Client> updateClient(Client client) async {
+    try {
+      final updatedClient = await CustomerController.updateCustomer(client);
+      int index = _clients.indexWhere((c) => c.id == client.id);
+      if (index != -1) {
+        _clients[index] = updatedClient;
+        print('Client mis à jour !');
+      }
+      notifyListeners();
+      return updatedClient;
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteClient(int id) async {
     try {
       await CustomerController.deleteCustomer(id);
       _clients.removeWhere((client) => client.id == id);
-      print('Client supprimée !');
+      print('Client supprimé !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
 
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des produits
+  Client getClientById(int id) {
+    return _clients.firstWhere((client) => client.id == id, orElse: () => Client.empty());
+  }
+
+  // Méthodes pour les produits
   Future<void> fetchProducts() async {
     _products = await ProductController.fetchProducts();
     notifyListeners();
   }
-  void addProduct(Product product) async {
+
+  Future<Product> addProduct(Product product, List<File> images) async {
     try {
-      await ProductController.createProduct(product);
-      _products.insert(0, product);
+      final createdProduct = await ProductController.createProductWithImages(product, images);
+      _products.insert(0, createdProduct);
       print('Produit ajouté !');
+      notifyListeners();
+      return createdProduct;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void updateProduct(Product product, List<File> images) async {
+
+  Future<Product> updateProduct(Product product, List<File> images) async {
     try {
-      await ProductController.updateProduct(product, images);
+      final updatedProduct = await ProductController.updateProduct(product, images);
       int index = _products.indexWhere((p) => p.id == product.id);
       if (index != -1) {
-        _products[index] = product;
+        _products[index] = updatedProduct;
         print('Produit mis à jour !');
       }
+      notifyListeners();
+      return updatedProduct;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteProduct(int id) async {
+
+  Future<void> deleteProduct(int id) async {
     try {
       await ProductController.deleteProduct(id);
       _products.removeWhere((product) => product.id == id);
       print('Produit supprimé !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
 
-  // Méthodes pour récupérer ajouter, supprimer ou mettre à jour des commandes externes
+  // Méthodes pour les commandes externes
   Future<void> fetchExternalOrders() async {
     _externalOrders = await ExternalOrdersController.fetchOrders();
     notifyListeners();
   }
-  void addExternalOrder(ExternalOrder order) async {
+
+  Future<ExternalOrder> addExternalOrder(ExternalOrder order) async {
     try {
-      await ExternalOrdersController.addOrder(order);
-      _externalOrders.insert(0, order);
+      final createdOrder = await ExternalOrdersController.addOrder(order);
+      _externalOrders.insert(0, createdOrder);
       print('Commande externe ajoutée !');
+      notifyListeners();
+      return createdOrder;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
 
-  void updateExternalOrder(ExternalOrder order) async {
+  Future<ExternalOrder> updateExternalOrder(int orderId, ExternalOrder order) async {
     try {
-      await ExternalOrdersController.updateOrder(order.id!, order);
-      int index = _externalOrders.indexWhere((o) => o.id == order.id);
+      final updatedOrder = await ExternalOrdersController.updateOrder(orderId, order);
+      int index = _externalOrders.indexWhere((o) => o.id == orderId);
       if (index != -1) {
-        _externalOrders[index] = order;
+        _externalOrders[index] = updatedOrder;
         print('Commande externe mise à jour !');
       }
+      notifyListeners();
+      return updatedOrder;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteExternalOrder(int id) async {
+
+  Future<bool> deleteExternalOrder(int id) async {
     try {
       await ExternalOrdersController.deleteOrder(id);
       _externalOrders.removeWhere((order) => order.id == id);
       print('Commande externe supprimée !');
+      notifyListeners();
+      return true;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des commandes internes
+
+  // Méthodes pour les commandes internes
   Future<void> fetchInternalOrders() async {
     _internalOrders = await InternalOrdersController.fetchOrders();
     notifyListeners();
   }
+
   Future<InternalOrder> addInternalOrder(InternalOrder order) async {
     try {
       final createdOrder = await InternalOrdersController.addOrder(order);
-      _internalOrders.insert(0, order);
+      _internalOrders.insert(0, createdOrder);
       print('Commande interne ajoutée !');
       notifyListeners();
       return createdOrder;
     } catch (e) {
       print('Erreur: $e');
-      throw Exception('Erreur lors de l\'ajout de la commande interne: $e');
+      rethrow;
     }
   }
-  void updateInternalOrder(InternalOrder order) async {
+
+  Future<InternalOrder> updateInternalOrder(int orderId, InternalOrder order) async {
     try {
-      await InternalOrdersController.updateOrder(order.id!, order);
-      int index = _internalOrders.indexWhere((o) => o.id == order.id);
+      final updatedOrder = await InternalOrdersController.updateOrder(orderId, order);
+      int index = _internalOrders.indexWhere((o) => o.id == orderId);
       if (index != -1) {
-        _internalOrders[index] = order;
+        _internalOrders[index] = updatedOrder;
         print('Commande interne mise à jour !');
       }
+      notifyListeners();
+      return updatedOrder;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteInternalOrder(int id) async {
+
+  Future<bool> deleteInternalOrder(int id) async {
     try {
       await InternalOrdersController.deleteOrder(id);
       _internalOrders.removeWhere((order) => order.id == id);
       print('Commande interne supprimée !');
+      notifyListeners();
+      return true;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
+  }
+
+  InternalOrder getInternalOrderById(int id) {
+    return _internalOrders.firstWhere((order) => order.id == id, orElse: () => InternalOrder.empty());
+  }
+
+  InternalOrder getInternalOrderByOrderNum(String orderNum) {
+    return _internalOrders.firstWhere((order) => order.orderNum == orderNum, orElse: () => InternalOrder.empty());
+  }
+
+  InternalOrder getInternalOrderByClientId(int clientId) {
+    return _internalOrders.firstWhere((order) => order.clientId == clientId, orElse: () => InternalOrder.empty());
+  }
+
+  // Méthodes pour les paiements
+  Future<void> fetchPayments(int orderId) async {
+    _payments = await InternalOrdersController.fetchPaymentsOrder(orderId);
     notifyListeners();
   }
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des paiements
-  Future<void> fetchPayments() async {
-    _payments = await InternalOrdersController.fetchPaymentsOrder();
-    notifyListeners();
-  }
-  void addPayment(int orderId, Payments payment) async {
+
+  Future<Payments> addPayment(int orderId, Payments payment) async {
     try {
-      await InternalOrdersController.addPayment(orderId, payment);
-      _payments.insert(0, payment);
+      final createdPayment = await InternalOrdersController.addPayment(orderId, payment);
+      _payments.insert(0, createdPayment);
       print('Paiement ajouté !');
+      notifyListeners();
+      return createdPayment;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
+
   void updatePayment(int orderId, Payments payment) async {
     try {
       //   static Future<bool> updatePayment(int orderId, int paymentId, Payments payment) async {
@@ -287,177 +329,231 @@ Future<void> refreshDataService(BuildContext context) async {
     }
     notifyListeners();
   }
-  // Méthodes pour récupérer ajouter, supprimer ou mettre à jour des fournisseurs
+
+  // Méthodes pour les fournisseurs
   Future<void> fetchSuppliers() async {
     _suppliers = await SupplierController.getSuppliers();
     notifyListeners();
   }
-  void addSupplier(Supplier supplier) async {
+
+  Future<Supplier> addSupplier(Supplier supplier) async {
     try {
-      await SupplierController.addSupplier(supplier);
-      _suppliers.insert(0, supplier);
+      final createdSupplier = await SupplierController.addSupplier(supplier);
+      _suppliers.insert(0, createdSupplier);
       print('Fournisseur ajouté !');
+      notifyListeners();
+      return createdSupplier;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void updateSupplier(Supplier supplier) async {
+
+  Future<Supplier> updateSupplier(Supplier supplier) async {
     try {
-      await SupplierController.updateSupplier(supplier.id, supplier);
+      final updatedSupplier = await SupplierController.updateSupplier(supplier.id, supplier);
       int index = _suppliers.indexWhere((s) => s.id == supplier.id);
       if (index != -1) {
-        _suppliers[index] = supplier;
+        _suppliers[index] = updatedSupplier;
         print('Fournisseur mis à jour !');
       }
+      notifyListeners();
+      return updatedSupplier;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteSupplier(int id) async {
+
+  Future<void> deleteSupplier(int id) async {
     try {
       await SupplierController.deleteSupplier(id);
       _suppliers.removeWhere((supplier) => supplier.id == id);
       print('Fournisseur supprimé !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  // Méthodes pour récupérer ajouter, supprimer ou mettre à jour des catégories
+
+  // Méthodes pour les catégories
   Future<void> fetchCategories() async {
     _categories = await CategoryController.fetchCategories();
     notifyListeners();
   }
-  // Récupérer les catégories par ID
+
   Category getCategoryById(int id) {
     return _categories.firstWhere((category) => category.id == id, orElse: () => Category.empty());
   }
-  void addCategory(Category category) async {
+
+  Future<Category> addCategory(Category category) async {
     try {
-      await CategoryController.addCategorie(category);
-      _categories.insert(0, category);
+      final createdCategory = await CategoryController.addCategorie(category);
+      _categories.insert(0, createdCategory);
       print('Catégorie ajoutée !');
+      notifyListeners();
+      return createdCategory;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void updateCategory(Category category) async {
+
+  Future<Category> updateCategory(Category category) async {
     try {
-      await CategoryController.updateCategory(category);
+      final updatedCategory = await CategoryController.updateCategory(category);
       int index = _categories.indexWhere((c) => c.id == category.id);
       if (index != -1) {
-        _categories[index] = category;
+        _categories[index] = updatedCategory;
         print('Catégorie mise à jour !');
       }
+      notifyListeners();
+      return updatedCategory;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteCategory(int id) async {
+
+  Future<void> deleteCategory(int id) async {
     try {
       await CategoryController.deleteCategory(id);
       _categories.removeWhere((category) => category.id == id);
       print('Catégorie supprimée !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des activités
+
+  // Méthodes pour les activités
   Future<void> fetchActivities() async {
     _activities = await HistoricalController.getAllHistorical();
     notifyListeners();
   }
 
-  void addActivity(Activity activity) async {
+  Future<Activity> addActivity(Activity activity) async {
     try {
-      await HistoricalController.addActivity(activity);
-      _activities.insert(0, activity);
+      final createdActivity = await HistoricalController.addActivity(activity);
+      _activities.insert(0, createdActivity);
       print('Activité ajoutée !');
+      notifyListeners();
+      return createdActivity;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void updateActivity(Activity activity) async {
+
+  Future<Activity> updateActivity(Activity activity) async {
     try {
-      await HistoricalController.updateActivity(activity.id!, activity);
+      final updatedActivity = await HistoricalController.updateActivity(activity.id!, activity);
       int index = _activities.indexWhere((a) => a.id == activity.id);
       if (index != -1) {
-        _activities[index] = activity;
+        _activities[index] = updatedActivity;
         print('Activité mise à jour !');
       }
+      notifyListeners();
+      return updatedActivity;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteActivity(int id) async {
+
+  Future<void> deleteActivity(int id) async {
     try {
       await HistoricalController.deleteActivity(id);
       _activities.removeWhere((activity) => activity.id == id);
       print('Activité supprimée !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
 
-  void deleteAllActivities() async {
+  Future<void> deleteAllActivities() async {
     try {
       await HistoricalController.deleteAllActivities();
       _activities.clear();
       print('Toutes les activités supprimées !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
 
-  // Méthodes pour récupérer, ajouter, supprimer ou mettre à jour des réductions
+  // Méthodes pour les réductions
   Future<void> fetchDiscounts() async {
     _discounts = await DiscountController.getDiscounts();
     notifyListeners();
   }
-  void addDiscount(Discount discount) async {
+
+  Future<Discount> addDiscount(Discount discount) async {
     try {
-      await DiscountController.createDiscount(discount);
-      _discounts.insert(0, discount);
+      final createdDiscount = await DiscountController.createDiscount(discount);
+      _discounts.insert(0, createdDiscount);
       print('Réduction ajoutée !');
+      notifyListeners();
+      return createdDiscount;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void updateDiscount(Discount discount) async {
+
+  Future<Discount> updateDiscount(Discount discount) async {
     try {
-      await DiscountController.updateDiscount(discount);
+      final updatedDiscount = await DiscountController.updateDiscount(discount);
       int index = _discounts.indexWhere((d) => d.id == discount.id);
       if (index != -1) {
-        _discounts[index] = discount;
+        _discounts[index] = updatedDiscount;
         print('Réduction mise à jour !');
       }
+      notifyListeners();
+      return updatedDiscount;
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
-    notifyListeners();
   }
-  void deleteDiscount(int id) async {
+
+  Future<void> deleteDiscount(int id) async {
     try {
       await DiscountController.deleteDiscount(id);
       _discounts.removeWhere((discount) => discount.id == id);
       print('Réduction supprimée !');
+      notifyListeners();
     } catch (e) {
       print('Erreur: $e');
+      rethrow;
     }
+  }
+
+  // Méthodes pour les données utilisateur
+  Future<void> fetchUserData() async {
+    _userData = await UserController.fetchUserProfile();
+    print('Données utilisateur récupérées: $_userData');
     notifyListeners();
   }
 
-  // Méthode pour vider les données
+  Future<Map<String, dynamic>?> fetchUserProfile() async {
+    try {
+      final profile = await UserController.fetchUserProfile();
+      _userData = profile;
+      notifyListeners();
+      return _userData;
+    } catch (e) {
+      print('Erreur lors de la récupération du profil utilisateur : $e');
+      rethrow;
+    }
+  }
+
+  // Autres méthodes
   void clearData() {
     _clients.clear();
     _products.clear();
@@ -469,24 +565,24 @@ Future<void> refreshDataService(BuildContext context) async {
     _activities.clear();
     notifyListeners();
   }
-  // Méthode pour rafraîchir les données
+
   Future<void> refreshData() async {
     await _loadInitialData();
     notifyListeners();
   }
-  // Méthode pour vérifier les privilèges
+
   bool hasPrivilege(String privilege) {
     return _myPrivileges?[privilege] ?? false;
   }
-  // Méthode pour obtenir les privilèges disponibles
+
   Map<String, dynamic>? getAvailablePrivileges() {
     return _myPrivileges;
   }
-  // Méthode pour obtenir le profil utilisateur
+
   Map<String, dynamic>? getUserProfile() {
-    return _myPrivileges; // Assuming _myPrivileges contains user profile data
+    return _myPrivileges;
   }
-  // Méthode pour obtenir le profil utilisateur
+
   Map<String, dynamic>? getUserProfileData() {
     return _userData;
   }

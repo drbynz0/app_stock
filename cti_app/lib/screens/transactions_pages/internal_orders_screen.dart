@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/services/activity_service.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -551,9 +550,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
       
-      final success = await InternalOrdersController.deleteOrder(order.id!);
+      final success = await appData.deleteInternalOrder(order.id!);
       
-      if (mounted) Navigator.pop(context);
       
       if (success && mounted) {
         await appData.fetchInternalOrders();

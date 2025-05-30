@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/supplier_controller.dart';
+import 'package:cti_app/models/external_order.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ class SuppliersManagementScreen extends StatefulWidget {
 }
 
 class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
+  AppData appData = AppData();
   List<Supplier> _suppliers = [];
+  List<ExternalOrder> _externalOrders = [];
   int _currentPage = 1;
   final int _itemsPerPage = 5;
   String _searchQuery = '';
@@ -52,6 +55,7 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
     if (mounted) {
       setState(() {
         _suppliers = appData.suppliers;
+        _externalOrders = appData.externalOrders;
       });
     }
   }
@@ -309,7 +313,7 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SupplierDetailsScreen(supplier: supplier),
+        builder: (context) => SupplierDetailsScreen(supplier: supplier, externalOrders: _externalOrders,),
       ),
     );
   }

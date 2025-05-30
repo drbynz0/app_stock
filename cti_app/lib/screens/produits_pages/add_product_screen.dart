@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,7 +12,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '/controller/category_controller.dart';
-import '/controller/product_controller.dart';
 import '/models/category.dart';
 import '/models/product.dart';
 import '/services/activity_service.dart';
@@ -107,7 +107,8 @@ class AddProductScreenState extends State<AddProductScreen> {
         promoPrice: null,
       );
 
-      final createdProduct = await ProductController.createProductWithImages(newProduct, selectedImages);
+      final appData = Provider.of<AppData>(context, listen: false);
+      final createdProduct = await appData.addProduct(newProduct, selectedImages);
 
       if (mounted) {
         Provider.of<ActivityService>(context, listen: false)

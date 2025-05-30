@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:cti_app/controller/external_orders_controller.dart';
 import 'package:cti_app/services/activity_service.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -477,7 +476,7 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
       
-      final success = await ExternalOrdersController.deleteOrder(order.id!);
+      final success = await appData.deleteExternalOrder(order.id!);
       
       if (mounted) Navigator.pop(context);
       

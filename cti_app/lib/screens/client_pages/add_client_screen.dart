@@ -47,9 +47,9 @@ class _AddClientScreenState extends State<AddClientScreen> {
         );
 
         final appData = Provider.of<AppData>(context, listen: false);
-        final _ = appData.addClient(newClient);
+        final createdClient = await appData.addClient(newClient);
 
-        await widget.onAddClient(newClient);
+        await widget.onAddClient(createdClient);
 
         Provider.of<ActivityService>(context, listen: false).addActivity(
           "Ajout d’un nouveau client : ${newClient.name}",
@@ -58,7 +58,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      Navigator.pop(context)  ;
+      Navigator.pop(context) ;
       print(e);
     }
   }

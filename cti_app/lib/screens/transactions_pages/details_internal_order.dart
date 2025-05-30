@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:cti_app/controller/customer_controller.dart';
+import 'package:cti_app/controller/facture_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -26,26 +26,36 @@ class DetailsInternalOrderScreen extends StatefulWidget {
 
 class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> {
   late InternalOrder order;
-  late FactureClient facture = FactureClient.getInternalFactureByOrderId(order.orderNum);
+  FactureClient facture = FactureClient.empty();
   List<Client> clients = [];
   List<InternalOrder> orders = [];
+  AppData appData = AppData();
+  List<FactureClient> internalFactures = [];
 
 
   @override
   void initState() {
     super.initState();
     _refreshOption();
-    order = widget.order;
   }
 
     // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-    final availableClients = await CustomerController.getCustomers();
-    final availableOrders = await InternalOrdersController.fetchOrders();
+    order = widget.order;
+    final availableFactures = await FactureClientController.getFactures();
+    appData = Provider.of<AppData>(context, listen: false);
     setState(() {
-      clients = availableClients;
-      orders = availableOrders;
+      internalFactures = availableFactures;
+      clients = appData.clients;
+      orders = appData.internalOrders;
     });
+  }
+
+  FactureClient getFacture(List<FactureClient> factures) {
+    return factures.firstWhere(
+      (facture) => facture.orderNum == order.orderNum,
+      orElse: () => FactureClient.empty(),
+    );
   }
 
   
@@ -60,14 +70,12 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
         title: Text('Commande de ${order.clientName}', style: const TextStyle(color: Colors.white)),
         actions: [
          IconButton(
-  icon: const Icon(Icons.print),
-    onPressed: () async {
-            final pdfData = await PdfService.generateOrderDetails(order);
-            await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfData);
-          },
-
-)
-
+            icon: const Icon(Icons.print),
+            onPressed: () async {
+              final pdfData = await PdfService.generateOrderDetails(order);
+              await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfData);
+            },
+          )
         ],
       ),
       body: SingleChildScrollView(
@@ -80,7 +88,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
             InkWell(
               onTap: () async {
                 // Naviguer vers la page des détails du client
-                final client = await CustomerController.getCustomerById(order.clientId!);
+                final client = appData.getClientById(order.clientId!);
                 if (client != Client.empty()) {
                   Navigator.push(
                     context,
@@ -137,6 +145,28 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
             _buildDescriptionCard(totalPrice),
             const SizedBox(height: 24),
 
+            //Section paiement
+            _buildSectionHeader('Paiements'),
+            const SizedBox(height: 16),
+            FutureBuilder<List<Payments>>(
+              future: InternalOrdersController.fetchPaymentsOrder(order.id!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Text('Erreur: ${snapshot.error}');
+                }
+                final payments = snapshot.data ?? [];
+                
+                return Column(
+                  children: payments.map((payment) => _buildPaymentItem(payment)).toList(),
+                );
+              },
+            ),
+
+            const SizedBox(height: 24),
+
             // Boutons d'action
               Row(
                 children: [
@@ -155,7 +185,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => {
-                      facture = FactureClient.getInternalFactureByOrderId(order.orderNum),
+                      facture = getFacture(internalFactures),
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -290,7 +320,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
     Widget _buildAllPrice() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -334,7 +364,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
         Text(
           value,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 10,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -364,6 +394,26 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
       case TypeOrder.inStore:
         return 'En magasin';
     }
+  }
+
+  Widget _buildPaymentItem(Payments payment) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: const Icon(Icons.payment, color: Colors.green),
+        title: Text(
+          '${payment.totalPaid.toStringAsFixed(2)} DH',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${_getPaymentMethodText(payment.paymentMethod)} - ${payment.paidAt != null ? _formatDate(DateTime.parse(payment.paidAt!)) : 'Date inconnue'}',
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () => _confirmDeletePayment(context, payment),
+        ),
+      ),
+    );
   }
 
   String _getPaymentMethodText(PaymentMethod method) {
@@ -547,7 +597,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
               try {
                 // Créer le nouveau paiement
                 final newPayment = Payments(
-                  order: order,
+                  order: order.id!,
                   totalPaid: amount,
                   paymentMethod: selectedMethod,
                   note: noteController.text.isNotEmpty ? noteController.text : null,
@@ -556,12 +606,6 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
 
                 // Appeler l'API pour ajouter le paiement
                 appData.addPayment(order.id!, newPayment);
-
-                // Mettre à jour l'interface
-                setState(() {
-                  order.paidPrice += amount;
-                  order.remainingPrice = order.totalPrice - order.paidPrice;
-                });
 
                                         // Ajouter la facture si le statut est "Terminée"
                   FactureClient.updateFactureForOrder(order);
@@ -592,6 +636,52 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
               }
             },
             child: const Text('Ajouter'),
+          ),
+        ],
+      ),
+    );
+  }
+
+    void _confirmDeletePayment(BuildContext context, Payments payment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer ce paiement?'),
+        content: Text('Êtes-vous sûr de vouloir supprimer ce paiement de ${payment.totalPaid} DH?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              try {
+                await InternalOrdersController.deletePayment(order.id!, payment.id!);
+                
+                setState(() {
+                  order.paidPrice -= payment.totalPaid;
+                  order.remainingPrice = order.totalPrice - order.paidPrice;
+                });
+                
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Paiement supprimé'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erreur: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Supprimer'),
           ),
         ],
       ),

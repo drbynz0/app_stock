@@ -116,11 +116,10 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
         final createdOrder = await appData.addInternalOrder(newOrder);
         // Créer le nouveau paiement
         final newPayment = Payments(
-          order: createdOrder,
+          order: createdOrder.id!,
           totalPaid: paidPrice,
           paymentMethod: _paymentMethod,
           note: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
-          paidAt: DateTime.now().toIso8601String(),
         );
         // Ajouter le paiement à la commande
         appData.addPayment(createdOrder.id!, newPayment);

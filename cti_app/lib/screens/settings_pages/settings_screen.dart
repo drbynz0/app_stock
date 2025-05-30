@@ -20,7 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final secureStorage = const FlutterSecureStorage();
   bool pinEnabled = false;
   bool fingerprintEnabled = false;
-  bool notificationsEnabled = true; // <== Pour gérer les notifications
+  bool notificationsEnabled = true;
 
   @override
   void initState() {
@@ -36,20 +36,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> togglePin(bool value) async {
-    setState(() {
-      pinEnabled = value;
-    });
-    await secureStorage.write(key: 'pin_enabled', value: value.toString());
-
     if (value) {
-      // Rediriger vers l'écran de création du PIN si activé
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PinCodeScreen(isCreating: true)),
-      );
+      // Activer le PIN
+      final savedPin = await secureStorage.read(key: 'user_pin');
+      if (savedPin == null || savedPin.isEmpty) {
+        // Pas de PIN existant, rediriger vers l'écran de création
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PinCodeScreen(isCreating: true)),
+        );
+        
+        if (result == true) {
+          setState(() {
+            pinEnabled = true;
+          });
+          await secureStorage.write(key: 'pin_enabled', value: 'true');
+        }
+      } else {
+        // PIN existe déjà, juste activer
+        setState(() {
+          pinEnabled = true;
+        });
+        await secureStorage.write(key: 'pin_enabled', value: 'true');
+      }
     } else {
-      // Supprimer l'ancien PIN si désactivé (optionnel)
-      await secureStorage.delete(key: 'user_pin');
+      // Désactiver le PIN (ne pas supprimer le code, juste désactiver la vérification)
+      setState(() {
+        pinEnabled = false;
+      });
+      await secureStorage.write(key: 'pin_enabled', value: 'false');
     }
   }
 
@@ -183,11 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Switch(
                   value: pinEnabled,
-                  onChanged: (bool value) {
-                    setState(() {
-                      pinEnabled = value;
-                    });
-                  },
+                  onChanged: togglePin, // Utilise directement togglePin
                   activeColor: Theme.of(context).primaryColor,
                 ),
                 const SizedBox(width: 8),
@@ -207,7 +218,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsSection({
-    
     required String title,
     required List<Widget> children,
   }) {

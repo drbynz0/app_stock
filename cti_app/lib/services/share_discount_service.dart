@@ -15,7 +15,7 @@ class ShareDiscountService {
     required Product product,
   }) async {
     final RenderBox? box = context.findRenderObject() as RenderBox?;
-    final String shareText = _generateShareText(discount, product) as String;
+    final String shareText = _generateShareText(discount, product);
     final String subject = 'Découvrez cette promotion exclusive !';
 
     await Share.share(
@@ -29,7 +29,7 @@ class ShareDiscountService {
     required Discount discount,
     required Product product,
   }) async {
-    final String text = _generateShareText(discount, product) as String;
+    final String text = _generateShareText(discount, product);
     final String url = 'https://wa.me/?text=${Uri.encodeComponent(text)}';
 
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -48,7 +48,7 @@ class ShareDiscountService {
     required Discount discount,
     required Product product,
   }) async {
-    final String text = _generateShareText(discount, product) as String;
+    final String text = _generateShareText(discount, product);
     final String url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(text)}';
 
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -94,7 +94,7 @@ class ShareDiscountService {
     } catch (e) {
       // Fallback: Partage générique si Instagram échoue
       await Share.share(
-        _generateShareText(discount, product) as String,
+        _generateShareText(discount, product),
         subject: 'Promotion ${product.name}',
       );
     }
@@ -106,7 +106,7 @@ class ShareDiscountService {
     required String recipientEmail,
   }) async {
     final String subject = 'Promotion exclusive: ${product.name}';
-    final String body = _generateShareText(discount, product) as String;
+    final String body = _generateShareText(discount, product);
     final String url = 'mailto:$recipientEmail?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
 
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -121,7 +121,7 @@ class ShareDiscountService {
     required Product product,
     required String phoneNumber,
   }) async {
-    final String text = _generateShareText(discount, product) as String;
+    final String text = _generateShareText(discount, product);
     final String url = 'sms:$phoneNumber?body=${Uri.encodeComponent(text)}';
 
     if (await canLaunchUrl(Uri.parse(url))) {
@@ -131,9 +131,9 @@ class ShareDiscountService {
     }
   }
 
-  static Future<String> _generateShareText(Discount discount, Product product) async {
-    final discountPercentage = ((discount.normalPrice - discount.promotionPrice) / 
-                            discount.normalPrice * 100).round();
+  static String _generateShareText(Discount discount, Product product) {
+    final discountPercentage = ((discount.normalPrice - discount.promotionPrice) /
+        discount.normalPrice * 100).round();
 
     return '''
 🔥 Promotion Exclusive 🔥

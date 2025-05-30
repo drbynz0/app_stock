@@ -2,7 +2,7 @@
 
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/controller/supplier_controller.dart';
-import 'package:cti_app/services/external_order_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/factures.dart';
@@ -103,8 +103,8 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
         items: _items,
       );
 
-        final orderService = Provider.of<ExternalOrderService>(context, listen: false);
-        final createdOrder = await orderService.addExternalOrder(newOrder);
+        final appData = Provider.of<AppData>(context, listen: false);
+        final createdOrder = await appData.addExternalOrder(newOrder);
 
       // Vérification de l'état de la commande
       if (_status == OrderStatus.completed) {

@@ -26,9 +26,9 @@ class InternalOrderService extends ChangeNotifier {
       print('Erreur lors du chargement des commandes internes: $e');
     }
   }
-  Future<void> fetchPayments() async {
+  Future<void> fetchPayments(int orderId) async {
     try {
-      final payments = await InternalOrdersController.fetchPaymentsOrder();
+      final payments = await InternalOrdersController.fetchPaymentsOrder(orderId);
       _payments.clear();
       _payments.addAll(payments);
       print('Paiements chargés avec succès !');

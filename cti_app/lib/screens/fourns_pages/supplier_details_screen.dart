@@ -1,5 +1,7 @@
 import 'package:cti_app/models/product.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/supplier.dart';
 import '/models/external_order.dart';
 import '../transactions_pages/details_external_order_screen.dart';
@@ -8,8 +10,8 @@ class SupplierDetailsScreen extends StatelessWidget {
   final Supplier supplier;
   final List<ExternalOrder> externalOrders;
 
-  SupplierDetailsScreen({super.key, required this.supplier}) 
-      : externalOrders = ExternalOrder.getExternalOrderList();
+  const SupplierDetailsScreen({super.key, required this.supplier, required this.externalOrders});
+  // Constructeur pour initialiser le fournisseur et les commandes externes;
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +21,10 @@ class SupplierDetailsScreen extends StatelessWidget {
     final pendingOrders = supplierOrders.where((order) => order.status == OrderStatus.pending).length;
     final completedOrders = supplierOrders.where((order) => order.status == OrderStatus.completed).length;
     final processingOrders = supplierOrders.where((order) => order.status == OrderStatus.processing).length;
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF003366),
         title: const Text(
           'Détails du Fournisseur',
           style: TextStyle(color: Colors.white),
@@ -30,22 +32,22 @@ class SupplierDetailsScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
+        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section Informations du fournisseur
-            const Text(
+            Text(
               'Informations du Fournisseur',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor
               ),
             ),
             const SizedBox(height: 8),
             Card(
-              color: const Color.fromARGB(255, 194, 224, 240),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -55,15 +57,17 @@ class SupplierDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow('ICE', supplier.ice),
+                    _buildDetailRow(context, 'ICE', supplier.ice),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Nom', supplier.nameRespo),
+                    _buildDetailRow(context, 'Responsable', supplier.nameRespo),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Email', supplier.email),
+                    _buildDetailRow(context, 'Service', supplier.nameEnt),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Téléphone', supplier.phone),
+                    _buildDetailRow(context, 'Email', supplier.email),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Adresse', supplier.address),
+                    _buildDetailRow(context, 'Téléphone', supplier.phone),
+                    const SizedBox(height: 8),
+                    _buildDetailRow(context, 'Adresse', supplier.address),
                   ],
                 ),
               ),
@@ -73,15 +77,14 @@ class SupplierDetailsScreen extends StatelessWidget {
             // Section Produits fournis
             Text(
               'Activités',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
-              color: const Color.fromARGB(255, 211, 237, 254),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -94,17 +97,16 @@ class SupplierDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section Statistiques des commandes
-            const Text(
+            Text(
               'Statistiques des Commandes',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
-              color: const Color.fromARGB(255, 148, 187, 224),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -114,10 +116,10 @@ class SupplierDetailsScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatCard('Total', totalOrders.toString(), Colors.blue),
-                    _buildStatCard('En attente', pendingOrders.toString(), Colors.orange),
-                    _buildStatCard('Traitement', processingOrders.toString(), Colors.yellow),
-                    _buildStatCard('Complétées', completedOrders.toString(), Colors.green),
+                    _buildStatCard(context, 'Total', totalOrders.toString(), Colors.blue),
+                    _buildStatCard(context, 'En attente', pendingOrders.toString(), Colors.orange),
+                    _buildStatCard(context, 'Traitement', processingOrders.toString(), Colors.yellow),
+                    _buildStatCard(context, 'Complétées', completedOrders.toString(), Colors.green),
                   ],
                 ),
               ),
@@ -125,16 +127,16 @@ class SupplierDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Section Liste des commandes
-            const Text(
+            Text(
               'Commandes',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF003366),
+                color: theme.titleColor
               ),
             ),
             const SizedBox(height: 8),
-            _buildOrdersList(supplierOrders),
+            _buildOrdersList(context, supplierOrders),
           ],
         ),
       ),
@@ -204,7 +206,8 @@ class SupplierDetailsScreen extends StatelessWidget {
   }
 
   // Widget pour afficher une ligne de détail
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,15 +216,14 @@ class SupplierDetailsScreen extends StatelessWidget {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.black87,
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: Colors.black54,
+              color: theme.secondaryTextColor,
             ),
           ),
         ),
@@ -230,7 +232,7 @@ class SupplierDetailsScreen extends StatelessWidget {
   }
 
   // Widget pour afficher une carte statistique
-  Widget _buildStatCard(String label, String value, Color color) {
+  Widget _buildStatCard(BuildContext context, String label, String value, Color color) {
     return Column(
       children: [
         Text(
@@ -246,7 +248,6 @@ class SupplierDetailsScreen extends StatelessWidget {
           label,
           style: const TextStyle(
             fontSize: 16,
-            color: Colors.black54,
           ),
         ),
       ],
@@ -254,7 +255,7 @@ class SupplierDetailsScreen extends StatelessWidget {
   }
 
   // Widget pour afficher la liste des commandes
-  Widget _buildOrdersList(List<ExternalOrder> orders) {
+  Widget _buildOrdersList(BuildContext context, List<ExternalOrder> orders) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

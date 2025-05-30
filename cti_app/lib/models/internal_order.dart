@@ -60,7 +60,6 @@ class InternalOrder {
 
       Map<String, dynamic> toJson() {
       return {
-        'id': id,
         'order_num': orderNum,
         'client_id': clientId,
         'client_name': clientName,
@@ -231,7 +230,7 @@ TypeOrder _mapStringToTypeOrder(String source) {
 
 class Payments {
   final int? id;
-  final InternalOrder order;
+  final int order;
   final double totalPaid;
   final PaymentMethod paymentMethod;
   final String? paidAt;

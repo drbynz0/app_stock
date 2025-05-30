@@ -56,7 +56,7 @@ class InternalOrdersController {
       if (response.statusCode == 200) {
         return InternalOrder.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
       } else {
-        throw Exception('Erreur lors de la modification: ${response.statusCode}');
+        throw Exception('Erreur lors de la modification: ${response.statusCode} ${response.body}');
       }
     } catch (e, stack) {
     debugPrint('Erreur dans updateOrder: $e');
@@ -97,32 +97,31 @@ class InternalOrdersController {
   }
 
   // Récupérer les paiements d'une commande interne
-  static Future<List<Payments>> fetchPaymentsOrder() async {
+  static Future<List<Payments>> fetchPaymentsOrder(int orderId) async {
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse('$baseUrl$orderId/payments/'),
       headers: await ApiService.headers(),
     );
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      final List<dynamic> paymentsData = responseData['payments'] ?? [];
-      final List<Payments> payments = paymentsData.map((e) => Payments.fromJson(e)).toList();
+      final List<dynamic>? paymentsData = responseData;
+      final List<Payments> payments = paymentsData!.map((e) => Payments.fromJson(e)).toList();
       return payments;
     } else {
-      throw Exception('Erreur lors de la récupération du profil utilisateur : ${response.body}');
+      throw Exception('Erreur lors de la récupération des paiements : ${response.body}');
     }
   }
 
   // Ajout d'un paiement à une commande interne
-  static Future<bool> addPayment(int orderId, Payments payment) async {
-    final response = await http.patch(
-      Uri.parse('$baseUrl$orderId/'),
+  static Future<Payments> addPayment(int orderId, Payments payment) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl$orderId/payments/'),
       headers: await ApiService.headers(),
-      body: jsonEncode({
-        'payments': [payment.toJson()],
-      }),
+      body: jsonEncode(payment.toJson()
+      ),
     );
     if (response.statusCode == 201) {
-      return true;
+    return Payments.fromJson(json.decode(response.body));    
     } else {
       throw Exception('Erreur lors de l\'ajout du paiement: ${response.body}');
     }

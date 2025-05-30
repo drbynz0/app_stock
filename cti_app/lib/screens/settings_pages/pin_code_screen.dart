@@ -42,7 +42,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.pop(context, true);
+              Navigator.pop(context, true); // Retourne true pour indiquer le succès
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -61,7 +61,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
           // Mode vérification
           final savedPin = await _storage.read(key: 'user_pin');
           if (pin == savedPin) {
-            Navigator.pop(context, true);
+            Navigator.pushReplacementNamed(context, '/home');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
