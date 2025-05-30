@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cti_app/constants/app_constant.dart';
+import 'package:cti_app/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,5 +82,29 @@ class AuthController {
     return null;
   }
 
+  static Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final baseUrl = AppConstant.BASE_URL + AppConstant.CHANGE_PASSWORD;
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        headers: await ApiService.headers(),
+        body: json.encode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      );
 
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final error = json.decode(response.body)['error'] ?? 'Erreur inconnue';
+        throw Exception(error);
+      }
+    } catch (e) {
+      throw Exception('Échec du changement de mot de passe: ${e.toString()}');
+    }
+  }
 }

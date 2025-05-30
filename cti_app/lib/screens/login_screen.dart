@@ -26,11 +26,15 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
 void _login() async {
+  // Vérifier d'abord si le widget est toujours monté
+  if (!mounted) return;
+  
   setState(() => _isLoading = true);
   String username = _usernameController.text.trim();
   String password = _passwordController.text.trim();
 
   if (username.isEmpty || password.isEmpty) {
+    if (!mounted) return;
     setState(() => _isLoading = false);
     _showErrorDialog('Veuillez remplir tous les champs.');
     return;
@@ -38,23 +42,27 @@ void _login() async {
 
   try {
     final success = await AuthController().login(username, password);
+    
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
       Navigator.pushReplacementNamed(context, '/home');
-    } else if (mounted) {
+    } else {
       _showErrorDialog('Identifiants incorrects');
     }
   } catch (e) {
+    if (!mounted) return;
     setState(() => _isLoading = false);
-    if (mounted) {
-      _showErrorDialog('Erreur de connexion. Veuillez réessayer.');
-    }
+    _showErrorDialog('Erreur de connexion. Veuillez réessayer.');
     debugPrint('Login error: $e');
   }
 }
 
 void _showErrorDialog(String message) {
+  // Vérifier mounted avant d'utiliser le contexte
+  if (!mounted) return;
+  
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
@@ -62,7 +70,10 @@ void _showErrorDialog(String message) {
       content: Text(message),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // Utiliser le contexte de la boîte de dialogue
+            Navigator.pop(context);
+          },
           child: const Text('OK'),
         ),
       ],

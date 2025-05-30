@@ -42,6 +42,8 @@ class AppData extends ChangeNotifier {
   List<Discount> _discounts = [];
   Map<String, dynamic>? _userData = {};
 
+
+
   AppData() {
     _loadInitialData();
   }
@@ -82,10 +84,13 @@ class AppData extends ChangeNotifier {
   List<Payments> get payments => _payments;
   List<Supplier> get suppliers => _suppliers;
   Map<String, dynamic>? get myPrivileges => _myPrivileges;
-  List<Activity> get activities => _activities;
+  List<Activity> get activities {
+    final sortedActivities = List<Activity>.from(_activities);
+    sortedActivities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return List.unmodifiable(sortedActivities);
+  }
   List<Discount> get discounts => _discounts;
   Map<String, dynamic>? get userData => _userData;
-
   Supplier getSupplierById(int id) {
     return _suppliers.firstWhere((supplier) => supplier.id == id, orElse: () => Supplier.empty());
   }

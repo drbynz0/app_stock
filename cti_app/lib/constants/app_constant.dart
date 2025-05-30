@@ -24,6 +24,7 @@ class AppConstant {
   static const String PASSWORD_RESET = "password_reset/";
   static const String VERIFY_PASSWORD = "password_reset/verify/";
   static const String SAVE_PASSWORD = "password_reset/save/";
+  static const String CHANGE_PASSWORD = "password_change/";
   static const String BANNER_URI = "banners/";
   static const String STORE_URI = "stores/";
   static const String SECTION_URI = "sections/";

@@ -21,13 +21,12 @@ class _HistoricalPageState extends State<HistoricalPage> {
     final filteredActivities = activities
         .where((a) => a.description.toLowerCase().contains(_searchKeyword.toLowerCase()))
         .toList()
-        .reversed // Pour afficher les plus récentes en premier
         .toList();
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         title: const Text("Historique des activités"),
-        centerTitle: true,
       ),
       body: Column(
         children: [

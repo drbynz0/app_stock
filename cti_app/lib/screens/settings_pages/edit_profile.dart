@@ -186,7 +186,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   const SizedBox(width: 12),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.backgroundColor,
+                      backgroundColor: theme.buttonColor,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
