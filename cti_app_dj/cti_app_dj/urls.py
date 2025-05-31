@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/', include('delivery_notes.urls')),
     path('api/', include('historical.urls')),
     path('api/', include('reset_password.urls')),
+    path('api/', include('assistant.urls')),
 ]
 
 if settings.DEBUG:

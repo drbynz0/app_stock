@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'delivery_notes',
     'historical',
     'reset_password',
+    'assistant',
 ]
 
 REST_FRAMEWORK = {

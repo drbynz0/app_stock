@@ -7,6 +7,7 @@ import '/models/product.dart';
 import '/models/internal_order.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class AddInternArticleDialog extends StatefulWidget {
   final List<Product> availableProducts;
@@ -165,7 +166,9 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
                   icon: Icon(Icons.barcode_reader, color: theme.iconColor),
                   onPressed: () async {
                     final scannedCode = await _scanBarcode();
+                    final player = AudioPlayer();
                     if (scannedCode != null) {
+                        await player.play(AssetSource('sounds/beepd.mp3'));
                       // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -206,7 +209,10 @@ class AddInternArticleDialogState extends State<AddInternArticleDialog> {
                           ),
                         );
                       }
+                    } else {
+                      await player.play(AssetSource('sounds/error.mp3'));
                     }
+
                   },
                 ),
               ),

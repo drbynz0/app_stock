@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/login_controller.dart';
+import 'package:cti_app/screens/chat_assistant_page/chat_assistant.dart';
 import 'package:cti_app/screens/historical_pages/historical_page.dart';
 import 'package:cti_app/screens/settings_pages/profile_screen.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -391,6 +392,17 @@ class HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat, color: Color(0xFF003366)),
+              title: const Text('CTI Assistant'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatAssistantScreen()),
                 );
               },
             ),

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -373,6 +374,8 @@ class AddProductScreenState extends State<AddProductScreen> {
                           onPressed: () async {
                             final scannedBarcode = await _scanBarcode();
                             if (scannedBarcode != null && mounted) {
+                              final player = AudioPlayer();
+                              await player.play(AssetSource('sounds/beep.mp3'));
                               setState(() {
                                 _codeController.text = scannedBarcode;
                               });
