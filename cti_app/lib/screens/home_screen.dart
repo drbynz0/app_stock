@@ -360,7 +360,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: Color(0xFF003366)),
+              leading: const Icon(Icons.person),
               title: const Text('Profil'),
               onTap: () {
                 Navigator.push(
@@ -373,7 +373,7 @@ class HomeScreenState extends State<HomeScreen> {
             ),
             //Historique des transactions
             ListTile(
-              leading: const Icon(Icons.history, color: Color(0xFF003366)),
+              leading: const Icon(Icons.history),
               title: const Text('Historique'),
               onTap: () {
                 Navigator.pop(context);
@@ -385,7 +385,7 @@ class HomeScreenState extends State<HomeScreen> {
             ),
            
             ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF003366)),
+              leading: const Icon(Icons.settings),
               title: const Text('Paramètres'),
               onTap: () {
                 Navigator.pop(context);
@@ -396,7 +396,7 @@ class HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.chat, color: Color(0xFF003366)),
+              leading: const Icon(Icons.chat),
               title: const Text('CTI Assistant'),
               onTap: () {
                 Navigator.pop(context);

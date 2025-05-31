@@ -32,6 +32,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nizarsoilih@gmail.com'
 EMAIL_HOST_PASSWORD = 'gnyabzbxdobcultd'
 
+GROQ_API_KEY = "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"  # À mettre dans les variables d'environnement
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -95,11 +98,11 @@ CORS_ALLOWED_ORIGINS = [
      "http://localhost:3000",
      "http://127.0.0.1:8000",
      " https://3f4a-45-218-97-102.ngrok-free.app",
-     "https://45b3-196-89-55-225.ngrok-free.app"
+     "https://8302-196-116-164-44.ngrok-free.app"
  ]
 
 ALLOWED_HOSTS = [
-    '45b3-196-89-55-225.ngrok-free.app',
+    '8302-196-116-164-44.ngrok-free.app',
     'optionally-willing-raven.ngrok-free.app',
     '127.0.0.1',
 ]

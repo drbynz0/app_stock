@@ -22,7 +22,7 @@ class InternalFactureDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppData appData = AppData();
+    final appData = Provider.of<AppData>(context, listen: false);
     final order = appData.getInternalOrderByOrderNum(facture.orderNum);
     final client = appData.getClientById(order.clientId!);
 

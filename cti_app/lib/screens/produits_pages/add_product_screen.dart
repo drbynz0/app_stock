@@ -38,6 +38,8 @@ class AddProductScreenState extends State<AddProductScreen> {
   final _marqueController = TextEditingController();
   final _descriptionController = TextEditingController();
   final List<File?> _imageFiles = List.filled(4, null);
+  late MobileScannerController _scannerController;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   Category _selectedCategory = Category.empty();
   bool _isLoading = false;
@@ -46,9 +48,14 @@ class AddProductScreenState extends State<AddProductScreen> {
 
   @override
   void initState() {
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      facing: CameraFacing.back,
+    );
     super.initState();
     _loadCategories();
   }
+  
 
   Future<void> _loadCategories() async {
     try {
@@ -144,79 +151,31 @@ class AddProductScreenState extends State<AddProductScreen> {
 
   Future<String?> _scanBarcode() async {
     final cameraStatus = await Permission.camera.request();
-    if (cameraStatus != PermissionStatus.granted) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permission caméra refusée')),
-        );
-      }
-      return null;
-    }
-
+    if (cameraStatus != PermissionStatus.granted) return null;
     final completer = Completer<String?>();
+    final controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates, // Évite les scans en double
+      facing: CameraFacing.back,
+    );
     
     await showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.6,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Stack(
-            children: [
-              MobileScanner(
-                controller: MobileScannerController(
-                  detectionSpeed: DetectionSpeed.normal,
-                  facing: CameraFacing.back,
-                  torchEnabled: false,
-                ),
-                onDetect: (capture) {
-                  final barcodes = capture.barcodes;
-                  if (barcodes.isNotEmpty && !completer.isCompleted) {
-                    Navigator.pop(context);
-                    completer.complete(barcodes.first.rawValue);
-                  }
-                },
-              ),
-              Positioned(
-                top: 16,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    if (!completer.isCompleted) {
-                      completer.complete(null);
-                    }
-                  },
-                ),
-              ),
-              Positioned(
-                bottom: 20,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Scannez un code-barres',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            child: MobileScanner(
+              controller: controller,
+              onDetect: (capture) {
+                final barcodes = capture.barcodes;
+                if (barcodes.isNotEmpty) {
+                  controller.stop();
+                  Navigator.pop(context);
+                  completer.complete(barcodes.first.rawValue);
+                }
+              },
+            ),
+          );
+        },
       ),
     );
 
@@ -233,6 +192,7 @@ class AddProductScreenState extends State<AddProductScreen> {
     _categoryController.dispose();
     _marqueController.dispose();
     _descriptionController.dispose();
+    _scannerController.dispose();
     super.dispose();
   }
 
@@ -372,19 +332,28 @@ class AddProductScreenState extends State<AddProductScreen> {
                         ),
                         child: IconButton(
                           onPressed: () async {
-                            final scannedBarcode = await _scanBarcode();
-                            if (scannedBarcode != null && mounted) {
-                              final player = AudioPlayer();
-                              await player.play(AssetSource('sounds/beep.mp3'));
-                              setState(() {
+                            if (_isLoading) return;
+                            
+                            setState(() => _isLoading = true);
+                            try {
+                              final scannedBarcode = await _scanBarcode();
+                              if (scannedBarcode != null && mounted) {
                                 _codeController.text = scannedBarcode;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Code scanné: $scannedBarcode'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
+                                // Jouer le son seulement si le scan réussit
+                                try {
+                                  await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
+                                } catch (e) {
+                                  debugPrint('Erreur son: $e');
+                                }
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Erreur scan: ${e.toString()}')),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => _isLoading = false);
                             }
                           },
                           icon: const Icon(Icons.barcode_reader),
