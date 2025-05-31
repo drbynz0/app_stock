@@ -81,7 +81,8 @@ Map<String, dynamic> toJson() {
     amount: order.totalPrice,
     date: '${order.date.day}/${order.date.month}/${order.date.year}',
     description: order.description ?? 'Facture pour commande ${order.id}',
-    isPaid: order.paidPrice >= order.totalPrice, isInternal: true,
+    isPaid: order.paidPrice >= order.totalPrice, 
+    isInternal: true,
   );
   
   // Ajouter la facture à votre liste de factures

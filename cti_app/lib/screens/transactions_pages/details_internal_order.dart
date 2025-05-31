@@ -63,6 +63,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
   @override
   Widget build(BuildContext context) {
     final totalPrice = order.items.fold(0.0, (sum, item) => sum + (item.unitPrice * item.quantity));
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +94,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ClientDetailsScreen(client: client, internalOrders: [],),
+                      builder: (context) => ClientDetailsScreen(client: client, internalOrders: orders,),
                     ),
                   );
                 } else {
@@ -122,10 +123,10 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
               _buildSectionHeader('Prix'),
               Spacer(),
               Expanded(
-                child: OutlinedButton(
+                child: ElevatedButton(
                   onPressed: () => _showAddPaymentDialog(context),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Color(0xFF004A99),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.buttonColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text('Ajouter Paiement', style: TextStyle(color: Colors.white)),
@@ -175,7 +176,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                     child: ElevatedButton(
                       onPressed: () => _changeOrderStatus(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 41, 160, 220),
+                        backgroundColor: theme.buttonColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text('Modifier Statut', style: TextStyle(color: Colors.white)),
@@ -183,7 +184,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: OutlinedButton(
+                    child: ElevatedButton(
                       onPressed: () => {
                       facture = getFacture(internalFactures),
                       Navigator.push(
@@ -193,8 +194,8 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                         ),
                       ),
                     },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 41, 160, 220),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.buttonColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text('Voir Facture', style: TextStyle(color: Colors.white)),
@@ -606,6 +607,10 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
 
                 // Appeler l'API pour ajouter le paiement
                 appData.addPayment(order.id!, newPayment);
+                setState(() {
+                  order.paidPrice += newPayment.totalPaid;
+                  order.remainingPrice = order.totalPrice - order.paidPrice;
+                });
 
                                         // Ajouter la facture si le statut est "Terminée"
                   FactureClient.updateFactureForOrder(order);
