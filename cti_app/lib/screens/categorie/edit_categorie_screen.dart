@@ -1,7 +1,7 @@
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/controller/category_controller.dart';
 import '/models/category.dart';
 
 Future<void> showEditCategorieDialog(
@@ -128,13 +128,15 @@ Future<void> showEditCategorieDialog(
                           description: descController.text.trim(),
                         );
                         
-                        await CategoryController.updateCategory(updatedCategorie);
+                        final appData = Provider.of<AppData>(context, listen: false);
+
+                        appData.updateCategory(updatedCategorie);
                         
                         if (context.mounted) {
                           Navigator.pop(context); // Fermer le loader
                           Navigator.pop(context); // Fermer la boîte de dialogue
+
                           onSuccess();
-                          
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Catégorie "${updatedCategorie.name}" mise à jour'),

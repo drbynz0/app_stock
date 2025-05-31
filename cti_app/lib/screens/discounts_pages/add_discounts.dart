@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/controller/product_controller.dart';
 import '/models/discounts.dart';
 import '/models/product.dart';
@@ -149,6 +151,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
   }
 
   Widget _buildProductAutocomplete() {
+    final theme = Provider.of<ThemeProvider>(context);
     return Autocomplete<Product>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
@@ -165,17 +168,13 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
           focusNode: focusNode,
           decoration: InputDecoration(
             labelText: 'Produit*',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade400),
-            ),
+            labelStyle: TextStyle(color: theme.textColor),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
             ),
-            prefixIcon: Icon(Icons.shopping_cart, color: Colors.blue.shade800),
+            prefixIcon: Icon(Icons.shopping_cart, color: theme.iconColor),
             filled: true,
-            fillColor: Colors.grey.shade50,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -223,6 +222,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
@@ -232,13 +232,8 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.dialogColor,
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade100],
-          ),
         ),
         child: SingleChildScrollView(
           child: Form(
@@ -253,20 +248,20 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.local_offer, size: 32, color: Colors.blue.shade800),
+                        Icon(Icons.local_offer, size: 32, color: theme.iconColor),
                         const SizedBox(width: 10),
                         Text(
                           'Nouvelle Promotion',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
+                            color: theme.titleColor,
                           ),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.blue.shade800),
+                      icon: Icon(Icons.close, color: theme.iconColor),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -282,18 +277,14 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                 TextFormField(
                   controller: _titleController,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.title, color: Colors.blue.shade800),
+                    prefixIcon: Icon(Icons.title, color: theme.iconColor),
                     labelText: 'Titre de la promotion*',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade400),
-                    ),
+                    labelStyle: TextStyle(color: theme.textColor),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                     ),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
                   ),
                   validator: (value) => value?.isEmpty ?? true ? 'Ce champ est requis' : null,
                 ),
@@ -304,16 +295,11 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Description',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade400),
-                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                     ),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
                   ),
                   maxLines: 2,
                 ),
@@ -324,7 +310,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                   'Période de validité*',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.blue.shade800,
+                    color: theme.titleColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -336,17 +322,12 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                         onTap: () => _selectDate(context, true),
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade400),
-                            ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                             filled: true,
-                            fillColor: Colors.grey.shade50,
                           ),
                           child: Text(
                             _startDate != null 
@@ -365,17 +346,12 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                         onTap: () => _selectDate(context, false),
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade400),
-                            ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                             filled: true,
-                            fillColor: Colors.grey.shade50,
                           ),
                           child: Text(
                             _endDate != null 
@@ -397,10 +373,6 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                         controller: _normalPriceController,
                         decoration: InputDecoration(
                           labelText: 'Prix normal*',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade400),
-                          ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
@@ -408,7 +380,6 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                           prefixText: 'MAD ',
                           prefixIcon: Icon(Icons.attach_money, color: Colors.blue.shade800),
                           filled: true,
-                          fillColor: Colors.grey.shade50,
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (_) => _calculateDiscount(),
@@ -421,10 +392,6 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                         controller: _promotionPriceController,
                         decoration: InputDecoration(
                           labelText: 'Prix promo*',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade400),
-                          ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
@@ -432,7 +399,6 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                           prefixText: 'MAD ',
                           prefixIcon: Icon(Icons.discount, color: Colors.blue.shade800),
                           filled: true,
-                          fillColor: Colors.grey.shade50,
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (_) => _calculateDiscount(),
@@ -446,7 +412,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                   Text(
                     'Réduction: ${_discountPercentage.toStringAsFixed(0)}%',
                     style: TextStyle(
-                      color: Colors.blue.shade800,
+                      color: theme.titleColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -458,7 +424,7 @@ class _AddDiscountScreenState extends State<AddDiscountScreen> {
                   child: ElevatedButton(
                     onPressed: _saveDiscount,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade800,
+                      backgroundColor: theme.buttonColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

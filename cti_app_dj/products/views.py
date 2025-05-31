@@ -48,21 +48,21 @@ class ProductCreateView(generics.CreateAPIView):
         
         try:
             # Créer le produit
-            
             data = request.data.dict()
             
             # Gérer les images séparément
             images = request.FILES.getlist('images')
             
-                        # Valider les données
+            # Valider les données
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             
             product = serializer.save()
 
-            
             for image in images:
-                ProductImage.objects.create(product=product, image=image)
+                # Sauvegarder l'image et obtenir le chemin relatif
+                path = default_storage.save(f'products/{image.name}', image)
+                ProductImage.objects.create(product=product, image=path)
                 
             return Response(
                 ProductSerializer(product).data,
@@ -94,20 +94,13 @@ class ProductUpdateView(generics.UpdateAPIView):
         
         # 2. Gestion des images (si fournies)
         if 'images' in request.FILES:
-            # Option 1: Supprimer les anciennes images
+            # Supprimer les anciennes images
             instance.images.all().delete()
-            existing_images = json.loads(request.POST['images'])
-            if existing_images:
-                for img_url in existing_images:
-                    if img_url:  # vérifier que l'URL n'est pas vide
-                        ProductImage.objects.create(
-                            product=instance,
-                            image=img_url  # cela suppose que votre modèle peut gérer les URLs directement
-                        )
             
-            # Option 2: Conserver les anciennes et ajouter les nouvelles
+            # Ajouter les nouvelles images
             for image in request.FILES.getlist('images'):
-                ProductImage.objects.create(product=instance, image=image)
+                path = default_storage.save(f'products/{image.name}', image)
+                ProductImage.objects.create(product=instance, image=path)
         
         # 3. Retourner l'objet complet avec ses images
         updated_product = Product.objects.get(pk=instance.id)

@@ -155,7 +155,7 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
           note: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
         );
         // Ajouter le paiement à la commande
-        appData.addPayment(widget.order.id!, newPayment);
+        appData.updatePayment(widget.order.id!, newPayment);
         if (_type == TypeOrder.online) {
           _updateDeliveryNote(updatedOrder);
         }

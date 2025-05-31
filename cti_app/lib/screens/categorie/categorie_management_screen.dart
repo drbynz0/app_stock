@@ -18,7 +18,6 @@ class CategorieScreen extends StatefulWidget {
 class _CategorieScreenState extends State<CategorieScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Category> _filteredCategories = [];
-  
   Map<String, dynamic>? myPrivileges = {};
   Map<String, dynamic>? userData = {};
 
@@ -26,6 +25,12 @@ class _CategorieScreenState extends State<CategorieScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadOption());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadOption();
   }
 
@@ -37,33 +42,28 @@ class _CategorieScreenState extends State<CategorieScreen> {
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
+    final appData = Provider.of<AppData>(context, listen: false);
     setState(() {
-      _filteredCategories = Provider.of<AppData>(context, listen: false)
-          .categories
-          .where((cat) => cat.name.toLowerCase().contains(query))
+      _filteredCategories = appData.categories
+          .where((cat) => (cat.name).toLowerCase().contains(query))
           .toList();
     });
   }
 
   Future<void> _loadOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        appData.refreshDataService(context);
-      }
-    });
-
-    if (appData.categories.isEmpty) {
-      await appData.fetchCategories();
-    }
-
-    myPrivileges = appData.myPrivileges;
-    userData = appData.userData;
+    await appData.fetchCategories();
 
     if (mounted) {
+      final query = _searchController.text.toLowerCase();
       setState(() {
-        _filteredCategories = appData.categories;
+        myPrivileges = appData.myPrivileges;
+        userData = appData.userData;
+        _filteredCategories = query.isEmpty
+            ? appData.categories
+            : appData.categories
+                .where((cat) => (cat.name).toLowerCase().contains(query))
+                .toList();
       });
     }
   }
@@ -71,7 +71,6 @@ class _CategorieScreenState extends State<CategorieScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
-    //final appData = Provider.of<AppData>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -90,19 +89,20 @@ class _CategorieScreenState extends State<CategorieScreen> {
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Rechercher une catégorie...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      prefixIcon: Icon(Icons.search),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                if ((userData?['is_staff'] ?? false) || (myPrivileges?['add_category'] ?? false))
+                if ((userData?['is_staff'] ?? false) ||
+                    (myPrivileges?['add_category'] ?? false))
                   ElevatedButton.icon(
-                    onPressed: () => showAddCategorieDialog(context, _loadOption),
+                    onPressed: () async {
+                      await showAddCategorieDialog(context, _loadOption);
+                      await _loadOption();
+                    },
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: const Text(
                       "Ajouter",
@@ -110,7 +110,8 @@ class _CategorieScreenState extends State<CategorieScreen> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.buttonColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -120,65 +121,94 @@ class _CategorieScreenState extends State<CategorieScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: _filteredCategories.length,
-              itemBuilder: (context, index) {
-                final categorie = _filteredCategories[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF004A99),
-                      child: Text(
-                        categorie.name[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+            child: Consumer<AppData>(
+              builder: (context, appData, child) {
+                final query = _searchController.text.toLowerCase();
+                _filteredCategories = query.isEmpty
+                    ? appData.categories
+                    : appData.categories
+                        .where((cat) =>
+                            (cat.name).toLowerCase().contains(query))
+                        .toList();
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: _filteredCategories.length,
+                  itemBuilder: (context, index) {
+                    final categorie = _filteredCategories[index];
+                    return Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFF004A99),
+                          child: Text(
+                            (categorie.name.isNotEmpty
+                                    ? categorie.name[0]
+                                    : '?')
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
+                        title: Text(
+                          categorie.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(categorie.description ?? ''),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategorieDetailScreen(
+                                categorie: categorie,
+                              ),
+                            ),
+                          );
+                          await _loadOption();
+                        },
+                        trailing: ((userData?['is_staff'] ?? false) ||
+                                (myPrivileges?['edit_category'] ?? false) ||
+                                (myPrivileges?['delete_category'] ?? false))
+                            ? Wrap(
+                                spacing: 8,
+                                children: [
+                                  if ((userData?['is_staff'] ?? false) ||
+                                      (myPrivileges?['edit_category'] ??
+                                          false))
+                                    IconButton(
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.blue),
+                                      onPressed: () async {
+                                        await showEditCategorieDialog(
+                                            context, categorie, _loadOption);
+                                        await _loadOption();
+                                      },
+                                    ),
+                                  if ((userData?['is_staff'] ?? false) ||
+                                      (myPrivileges?['delete_category'] ??
+                                          false))
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () async {
+                                        await showDeleteConfirmationDialog(
+                                            context, categorie, _loadOption);
+                                        await _loadOption();
+                                      },
+                                    ),
+                                ],
+                              )
+                            : null,
                       ),
-                    ),
-                    title: Text(
-                      categorie.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(categorie.description ?? ''),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategorieDetailScreen(categorie: categorie),
-                        ),
-                      );
-                    },
-                    trailing: ((userData?['is_staff'] ?? false) || 
-                             (myPrivileges?['edit_category'] ?? false) || 
-                             (myPrivileges?['delete_category'] ?? false))
-                        ? Wrap(
-                            spacing: 8,
-                            children: [
-                              if ((userData?['is_staff'] ?? false) || (myPrivileges?['edit_category'] ?? false))
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () => showEditCategorieDialog(
-                                      context, categorie, _loadOption),
-                                ),
-                              if ((userData?['is_staff'] ?? false) || (myPrivileges?['delete_category'] ?? false))
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => showDeleteConfirmationDialog(
-                                      context, categorie, _loadOption),
-                                ),
-                            ],
-                          )
-                        : null,
-                  ),
+                    );
+                  },
                 );
               },
             ),

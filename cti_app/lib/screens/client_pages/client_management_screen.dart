@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:cti_app/controller/customer_controller.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -297,7 +296,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
       builder: (context) => DeleteClientScreen(
         client: client,
         onDeleteClient: () async {
-          await CustomerController.deleteCustomer(client.id!);
+          appData.deleteClient(client.id!);
           await appData.fetchClients();
           await _refreshOption();
           Navigator.pop(context, true); // Retourne true si suppression réussie

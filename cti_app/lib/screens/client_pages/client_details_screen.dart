@@ -9,10 +9,10 @@ class ClientDetailsScreen extends StatelessWidget {
   final Client client;
   final List<InternalOrder> internalOrders; // Liste des commandes internes
 
-  ClientDetailsScreen({
+  const ClientDetailsScreen({
     super.key,
-    required this.client, required List internalOrders,
-  }) : internalOrders = List<InternalOrder>.from(internalOrders);
+    required this.client, required this.internalOrders,
+  }); // Constructeur de la page
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/controller/discount_controller.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/discounts.dart';
 
 class DeleteDiscountScreen extends StatelessWidget {
@@ -26,16 +28,16 @@ class DeleteDiscountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: 0,
-      backgroundColor: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.dialogColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -70,16 +72,16 @@ class DeleteDiscountScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: theme.textColor,
               ),
             ),
             const SizedBox(height: 16),
 
             // Détails de la promotion
-            _buildDetailRow('Titre', discount.title),
-            _buildDetailRow('Produit', discount.productName),
-            _buildDetailRow('Prix normal', '${discount.normalPrice} MAD'),
-            _buildDetailRow('Prix promo', '${discount.promotionPrice} MAD'),
+            _buildDetailRow(context, 'Titre', discount.title),
+            _buildDetailRow(context, 'Produit', discount.productName),
+            _buildDetailRow(context, 'Prix normal', '${discount.normalPrice} MAD'),
+            _buildDetailRow(context, 'Prix promo', '${discount.promotionPrice} MAD'),
             const SizedBox(height: 24),
 
             // Boutons d'action
@@ -99,7 +101,7 @@ class DeleteDiscountScreen extends StatelessWidget {
                     child: Text(
                       'Annuler',
                       style: TextStyle(
-                        color: Colors.grey[800],
+                        color: theme.textColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -135,7 +137,8 @@ class DeleteDiscountScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -145,7 +148,7 @@ class DeleteDiscountScreen extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: theme.secondaryTextColor,
                 fontWeight: FontWeight.w500,
               ),
             ),

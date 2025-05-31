@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/controller/category_controller.dart';
 import '/models/category.dart';
 
 Future<void> showDeleteConfirmationDialog(
@@ -99,7 +99,9 @@ Future<void> showDeleteConfirmationDialog(
                             builder: (context) => const Center(child: CircularProgressIndicator()),
                           );
 
-                          await CategoryController.deleteCategory(category.id);
+                          final appData = Provider.of<AppData>(context, listen: false);
+
+                          appData.deleteCategory(category.id!);
                           
                           Navigator.pop(context);
                           Navigator.pop(context);

@@ -1,4 +1,4 @@
-import 'package:cti_app/services/category_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +58,7 @@ Future<void> showAddCategorieDialog(
                   controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Nom*',
+                    labelStyle: TextStyle(color: theme.textColor),
                     hintText: 'Saisissez le nom de la catégorie',
                     prefixIcon: Icon(Icons.category),
                     border: OutlineInputBorder(
@@ -80,6 +81,7 @@ Future<void> showAddCategorieDialog(
                   maxLines: 3,
                   decoration: InputDecoration(
                     labelText: 'Description',
+                    labelStyle: TextStyle(color: theme.textColor),
                     hintText: 'Description optionnelle',
                     prefixIcon: Icon(Icons.description),
                     border: OutlineInputBorder(
@@ -111,7 +113,7 @@ Future<void> showAddCategorieDialog(
                       child: Text(
                         'Annuler',
                         style: TextStyle(
-                          color: Colors.grey.shade700,
+                          color: theme.textColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -149,8 +151,8 @@ Future<void> showAddCategorieDialog(
                             description: descController.text.trim(),
                           );
 
-                          final categoryService = Provider.of<CategoryService>(context, listen: false);
-                          final _ = categoryService.addCategory(newCategorie);
+                          final appData = Provider.of<AppData>(context, listen: false);
+                          final _ = appData.addCategory(newCategorie);
 
                           if (context.mounted) {
                             Navigator.pop(context); // Fermer le loader

@@ -57,6 +57,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
             'last_name': _lastNameController.text,
             'email': _emailController.text,
             'phone': _phoneController.text,
+            'user_type': _privilege,
           };
       await UserController.updateUser(
         widget.employee['id'],

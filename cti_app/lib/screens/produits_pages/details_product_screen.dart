@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:cti_app/controller/discount_controller.dart';
 import 'package:cti_app/models/discounts.dart';
@@ -25,6 +25,8 @@ class DetailsProductScreen extends StatefulWidget {
 class DetailsProductScreenState extends State<DetailsProductScreen> {
   late Product product;
   late Discount discount;
+  int _currentImageIndex = 0;
+  final CarouselSliderController _carouselController = CarouselSliderController();
 
   @override
   void initState() {
@@ -169,11 +171,17 @@ class DetailsProductScreenState extends State<DetailsProductScreen> {
     return Column(
       children: [
         CarouselSlider(
+          carouselController: _carouselController,
           options: CarouselOptions(
             height: 300,
             autoPlay: true,
             enlargeCenterPage: true,
             viewportFraction: 1,
+            onPageChanged: (index, reason) {
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
           ),
           items: product.images.map((imageUrl) {
             return Builder(
@@ -197,15 +205,17 @@ class DetailsProductScreenState extends State<DetailsProductScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: product.images.asMap().entries.map((entry) {
-            return Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                // ignore: deprecated_member_use
-                color: Colors.grey.withOpacity(
-                  entry.key == 0 ? 0.9 : 0.4,
+            return GestureDetector(
+              onTap: () => _carouselController.animateToPage(entry.key),
+              child: Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: entry.key == _currentImageIndex 
+                      ? Colors.blue.shade800 
+                      : Colors.grey.withOpacity(0.4),
                 ),
               ),
             );

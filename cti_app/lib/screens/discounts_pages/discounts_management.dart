@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:cti_app/controller/discount_controller.dart';
 import 'package:cti_app/models/category.dart';
@@ -64,7 +64,7 @@ class _DiscountsManagementScreenState extends State<DiscountsManagementScreen> {
     final appData = Provider.of<AppData>(context, listen: false);
     await appData.fetchDiscounts();
     await _loadOption();
-    
+    Navigator.pop(context);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

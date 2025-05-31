@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -23,6 +25,8 @@ class DetailsDiscountScreen extends StatefulWidget {
 class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
   late Discount discount;
   late Product product;
+    int _currentImageIndex = 0; // Ajouté pour suivre l'index actuel
+  final CarouselSliderController _carouselController = CarouselSliderController();
 
   @override
   void initState() {
@@ -62,18 +66,24 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
     );
   }
 
-  Widget _buildImageCarousel() {
+ Widget _buildImageCarousel() {
     final images = product.images;
     final hasImages = images.isNotEmpty;
 
     return Column(
       children: [
         CarouselSlider(
+          carouselController: _carouselController, // Ajouté
           options: CarouselOptions(
             height: 300,
             autoPlay: true,
             enlargeCenterPage: true,
             viewportFraction: 1,
+            onPageChanged: (index, reason) { // Ajouté pour mettre à jour l'index
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
           ),
           items: hasImages
               ? product.images.map((imageUrl) => _buildImageItem(imageUrl)).toList()
@@ -82,11 +92,30 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
         if (hasImages) 
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: product.images.asMap().entries.map((entry) => 
-              _buildCarouselIndicator(entry.key == 0)
-            ).toList(),
-          ),
+            children: product.images.asMap().entries.map((entry) {
+              final index = entry.key;
+              return GestureDetector(
+                onTap: () => _carouselController.animateToPage(index),
+                child: _buildCarouselIndicator(index == _currentImageIndex),
+            );
+          }).toList(),
+        ),
       ],
+    );
+  }
+
+    Widget _buildCarouselIndicator(bool isActive) {
+    final theme = Provider.of<ThemeProvider>(context);
+    return Container(
+      width: 8,
+      height: 8,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isActive 
+            ? Colors.blue.shade800 // Couleur pour l'image active
+            : theme.secondaryTextColor.withOpacity(0.4), // Couleur pour les images inactives
+      ),
     );
   }
 
@@ -111,18 +140,7 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
     );
   }
 
-  Widget _buildCarouselIndicator(bool isActive) {
-    return Container(
-      width: 8,
-      height: 8,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        // ignore: deprecated_member_use
-        color: Colors.grey.withOpacity(isActive ? 0.9 : 0.4),
-      ),
-    );
-  }
+
 
   Widget _buildProductInfoSection(int discountPercentage) {
     final theme = Provider.of<ThemeProvider>(context);
@@ -188,7 +206,6 @@ class _DetailsDiscountScreenState extends State<DetailsDiscountScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            // ignore: deprecated_member_use
             color: Colors.red.withOpacity(0.2),
             borderRadius: BorderRadius.circular(20),
           ),
