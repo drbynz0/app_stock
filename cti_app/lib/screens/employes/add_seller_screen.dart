@@ -72,6 +72,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -107,6 +108,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 controller: _usernameController,
                 decoration: InputDecoration(
                   labelText: 'Nom d\'utilisateur',
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -122,6 +124,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 controller: _firstNameController,
                 decoration: InputDecoration(
                   labelText: 'Prénom',
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -137,6 +140,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 controller: _lastNameController,
                 decoration: InputDecoration(
                   labelText: 'Nom',
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -152,6 +156,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -170,6 +175,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Mot de passe',
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -196,7 +202,7 @@ class _AddEmployeDialogState extends State<AddEmployeDialog> {
                 controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'Téléphone',
-
+                  labelStyle: TextStyle(color: theme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

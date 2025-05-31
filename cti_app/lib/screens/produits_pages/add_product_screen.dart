@@ -303,6 +303,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                           controller: _codeController,
                           decoration: InputDecoration(
                             labelText: 'Code produit*',
+                            labelStyle: TextStyle(color: theme.textColor),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(color: Colors.grey.shade400),
@@ -368,6 +369,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: 'Nom du produit*',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),
@@ -394,6 +396,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _variantController,
                     decoration: InputDecoration(
                       labelText: 'Variante*',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),
@@ -424,6 +427,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _marqueController,
                     decoration: InputDecoration(
                       labelText: 'Marque*',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),
@@ -450,6 +454,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _priceController,
                     decoration: InputDecoration(
                       labelText: 'Prix* (DH)',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),
@@ -480,6 +485,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _stockController,
                     decoration: InputDecoration(
                       labelText: 'Stock*',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),
@@ -529,6 +535,7 @@ class AddProductScreenState extends State<AddProductScreen> {
                     controller: _descriptionController,
                     decoration: InputDecoration(
                       labelText: 'Description',
+                      labelStyle: TextStyle(color: theme.textColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Colors.grey.shade400),

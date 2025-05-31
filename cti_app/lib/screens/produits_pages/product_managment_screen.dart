@@ -15,6 +15,7 @@ import 'add_product_screen.dart';
 import 'delete_product_screen.dart';
 import 'edit_product_screen.dart';
 import 'details_product_screen.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
@@ -29,6 +30,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
   String _searchQuery = '';
   int _currentPage = 1;
   final int _itemsPerPage = 10;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   
   Map<String, dynamic>? myPrivileges = {};
   Map<String, dynamic>? userData = {};
@@ -38,6 +40,12 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     super.initState();
     _refreshOption();
   }
+
+@override
+void dispose() {
+  _audioPlayer.dispose();
+  super.dispose();
+}
 
   Future<void> _refreshOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
@@ -422,7 +430,7 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
             
             Provider.of<ActivityService>(context, listen: false).addActivity(
               "Suppression du produit : ${product.name}",
-              'shopping_bag',
+              'delete',
             );
             
             if (mounted) {
@@ -474,54 +482,60 @@ class ProductManagementScreenState extends State<ProductManagementScreen> {
     );
   }
 
-  Widget buildButtonScan(double bottom) {
-    return Positioned(
-      right: 23,
-      bottom: bottom,
-      child: IconButton(
-        onPressed: () async {
-          final scannedBarcode = await _scanBarcode();
-          if (scannedBarcode != null) {
-            try {
-              final matchingProduct = _products.firstWhere(
-                (product) => product.code == scannedBarcode,
-              );
+Widget buildButtonScan(double bottom) {
+  return Positioned(
+    right: 23,
+    bottom: bottom,
+    child: IconButton(
+      onPressed: () async {
+        final scannedBarcode = await _scanBarcode();
+        if (scannedBarcode != null) {
+          try {
+            // Jouer le son de succès
+            await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
+            
+            final matchingProduct = _products.firstWhere(
+              (product) => product.code == scannedBarcode,
+            );
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Produit trouvé : ${matchingProduct.name}'),
-                  backgroundColor: Colors.green,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailsProductScreen(product: matchingProduct),
-                ),
-              );
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Aucun produit trouvé pour le code $scannedBarcode'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            }
-          } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Scan annulé'),
-                backgroundColor: Colors.orange,
-                duration: Duration(seconds: 3),
+              SnackBar(
+                content: Text('Produit trouvé : ${matchingProduct.name}'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailsProductScreen(product: matchingProduct),
+              ),
+            );
+          } catch (e) {
+            // Jouer le son d'erreur
+            await _audioPlayer.play(AssetSource('sounds/error.mp3'));
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Aucun produit trouvé pour le code $scannedBarcode'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
               ),
             );
           }
-        },
-        icon: const Icon(Icons.barcode_reader, size: 30),
-      ),
-    );
-  }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Scan annulé'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      icon: const Icon(Icons.barcode_reader, size: 30),
+    ),
+  );
+}
 }

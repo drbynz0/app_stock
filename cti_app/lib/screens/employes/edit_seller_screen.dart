@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cti_app/constants/app_constant.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/controller/user_controller.dart';
+import 'package:provider/provider.dart';
 
 class EditEmployeDialog extends StatefulWidget {
   final Map<String, dynamic> employee;
@@ -79,7 +81,9 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -99,11 +103,11 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppConstant.PRIMARY_COLOR,
+                    color: theme.titleColor,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close, color: AppConstant.PRIMARY_COLOR),
+                  icon: Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -113,11 +117,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               controller: _usernameController,
               decoration: InputDecoration(
                 labelText: 'Nom d\'utilisateur',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -130,11 +130,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               controller: _firstNameController,
               decoration: InputDecoration(
                 labelText: 'Prénom',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -147,11 +143,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               controller: _lastNameController,
               decoration: InputDecoration(
                 labelText: 'Nom',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -164,11 +156,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -182,11 +170,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               controller: _phoneController,
               decoration: InputDecoration(
                 labelText: 'Téléphone',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -200,11 +184,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               value: _privilege,
               decoration: InputDecoration(
                 labelText: 'Rôle',
-                labelStyle: TextStyle(color: AppConstant.PRIMARY_COLOR),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR),
-                ),
+                labelStyle: TextStyle(color: theme.textColor),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: AppConstant.PRIMARY_COLOR, width: 2),
@@ -227,7 +207,7 @@ class _EditEmployeDialogState extends State<EditEmployeDialog> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppConstant.PRIMARY_COLOR,
+                  backgroundColor: theme.buttonColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
