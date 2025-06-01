@@ -3,6 +3,7 @@
 import 'package:cti_app/controller/product_controller.dart';
 import 'package:cti_app/controller/supplier_controller.dart';
 import 'package:cti_app/services/app_data_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/models/factures.dart';
@@ -169,6 +170,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
 }
 
   Widget _buildFournisseurAutocomplete() {
+    final theme = Provider.of<ThemeProvider>(context);
     return Autocomplete<Supplier>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
@@ -188,9 +190,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
           focusNode: focusNode,
           decoration: InputDecoration(
             labelText: 'Nom du Fournisseur*',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            labelStyle: TextStyle(color: theme.textColor),
             suffixIcon: Icon(Icons.arrow_drop_down),
           ),
           validator: (value) {
@@ -240,7 +240,9 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -287,9 +289,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Statut',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
               ),
               const SizedBox(height: 16),
@@ -312,9 +312,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Moyen de Paiement*',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
               ),
               const SizedBox(height: 24),
@@ -325,9 +323,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 controller: _totalPriceController,
                 decoration: InputDecoration(
                   labelText: 'Prix Total',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -343,9 +339,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 controller: _paidPriceController,
                 decoration: InputDecoration(
                   labelText: 'Prix Payé',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -374,9 +368,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 enabled: false,
                 decoration: InputDecoration(
                   labelText: 'Prix Restant',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
               ),
               const SizedBox(height: 16),
@@ -387,9 +379,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  labelStyle: TextStyle(color: theme.textColor),
                 ),
               ),
               const SizedBox(height: 16),

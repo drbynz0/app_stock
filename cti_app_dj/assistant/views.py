@@ -28,17 +28,11 @@ async def call_groq_api(client, question):
             {
                 "role": "system",
                 "content": (
-                    "Tu es CTI Assistant spécialiste en gestion commerciale, ventes, gestion de stock et et expert en language SQL."
-                    "L'utilisateur est un gérant d'une entreprise de vente des articles d'informatique comme PC, ordinateur Souris, routeur, Imprimente, etc. (CTI TECHNOLOGIE)"
-                    " Toi tu es là pour lui aider à lui donner des iNformations direct liées à sa base de donnée PostgreSQL avec des réponses bien reformulé."
-                    "Tu doit accépter seulement tout les requetes SELECT."
-                    "C'est à toi d'executer les requetes et donner les résultats de la requete en langage naturelle"
-                    "Il peut aussi te demander des informations sur lui même, sur son entreprise et sur leurs employés."
-                    "Tu peux aussi lui donner des suggestions liée à la gestion de stock, la vente, la gestion de la base de donnée, etc."
-                    "Lui indiquer si il y a des données incompatibles dans la base de donnée, etc."
-                    " Tu peux aussi répondre à des questions générales, proposer des conseils pour améliorer une application de gestion,"
-                    " aider à l’analyse des performances commerciales et stock, et expliquer clairement les résultats."
-                    " N’utilise pas de commentaires SQL et évite toute requête destructive."
+                    "Tu es CTI Assistant, expert en gestion commerciale, ventes, gestion de stock et langage SQL. "
+                    "L'utilisateur est le gérant de CTI TECHNOLOGIE, une entreprise vendant des articles informatiques comme des PC, souris, routeurs, imprimantes, etc. "
+                    "Tu es là pour l’aider à interroger sa base de données PostgreSQL via des requêtes SELECT uniquement, et à lui fournir les résultats en langage naturel. "
+                    "Tu peux également lui donner des conseils sur la gestion des stocks, l'amélioration de son application, détecter des données incohérentes dans la base, et analyser ses performances commerciales. "
+                    "Ne réponds qu’aux requêtes SELECT, sans utiliser de commentaires SQL ni de requêtes destructives."
                 )
             },
             {"role": "user", "content": question}
@@ -62,20 +56,27 @@ async def call_groq_api(client, question):
 
 def extract_sql_and_comment(content):
     """Tente d'extraire la requête SQL et la reformulation"""
-    sql_match = re.search(r"```sql\\n(.*?)```", content, re.DOTALL)
+    sql_match = re.search(r"```sql\s+(.*?)\s*```", content, re.DOTALL)
     sql = sql_match.group(1).strip() if sql_match else None
     explanation = re.split(r"```sql.*?```", content, flags=re.DOTALL)[0].strip()
     return explanation, sql
 
 def execute_sql_query(sql_query):
+    MAX_ROWS = 50  # Limite de lignes pour éviter surcharge
+    dangerous_keywords = ['delete', 'update', 'insert', 'drop', 'alter']
+
     try:
+        # Vérifie que c'est bien une requête SELECT uniquement
+        if not sql_query.strip().lower().startswith('select'):
+            raise ValueError("Seules les requêtes SELECT sont autorisées")
+        if any(keyword in sql_query.lower() for keyword in dangerous_keywords):
+            raise ValueError("Requête contenant un mot-clé non autorisé")
+
         with psycopg2.connect(**DB_CONFIG) as conn:
             with conn.cursor() as cur:
-                if not sql_query.strip().lower().startswith('select'):
-                    raise ValueError("Seules les requêtes SELECT sont autorisées")
                 cur.execute(sql_query)
                 columns = [desc[0] for desc in cur.description]
-                rows = cur.fetchall()
+                rows = cur.fetchmany(MAX_ROWS)
                 return {'columns': columns, 'rows': rows, 'query': sql_query}
     except Exception as e:
         logger.error(f"Erreur SQL: {str(e)} - Requête: {sql_query}")
@@ -96,12 +97,14 @@ async def ask_ai(request):
 
     async with httpx.AsyncClient() as client:
         try:
+            logger.info(f"Question utilisateur : {user_question}")
             response = await call_groq_api(client, user_question)
-            result = response.json()
+            result = await response.json()
             content = result['choices'][0]['message']['content']
+            logger.info(f"Réponse Groq : {content}")
+
             explanation, sql_query = extract_sql_and_comment(content)
 
-            # Si requête SQL valide : exécution
             if sql_query:
                 try:
                     query_result = execute_sql_query(sql_query)
@@ -113,19 +116,38 @@ async def ask_ai(request):
                         "generated_sql": query_result['query']
                     })
                 except ValueError as e:
-                    return JsonResponse({"success": False, "error": str(e), "generated_sql": sql_query}, status=400)
+                    return JsonResponse({
+                        "success": False,
+                        "error": str(e),
+                        "generated_sql": sql_query
+                    }, status=400)
                 except Exception as e:
-                    return JsonResponse({"success": False, "error": str(e), "generated_sql": sql_query}, status=500)
+                    return JsonResponse({
+                        "success": False,
+                        "error": str(e),
+                        "generated_sql": sql_query
+                    }, status=500)
             else:
-                # Pas de SQL : simple réponse explicative
-                return JsonResponse({"success": True, "human_response": explanation})
+                return JsonResponse({
+                    "success": True,
+                    "human_response": explanation
+                })
 
         except httpx.HTTPStatusError as e:
             logger.error(f"Erreur API Groq: {str(e)}")
-            return JsonResponse({"success": False, "error": f"Erreur API: {e.response.text}"}, status=502)
+            return JsonResponse({
+                "success": False,
+                "error": f"Erreur API: {e.response.text}"
+            }, status=502)
         except httpx.RequestError as e:
             logger.error(f"Erreur réseau: {str(e)}")
-            return JsonResponse({"success": False, "error": "Erreur de connexion à l'API"}, status=503)
+            return JsonResponse({
+                "success": False,
+                "error": "Erreur de connexion à l'API"
+            }, status=503)
         except Exception as e:
             logger.exception("Erreur inattendue:")
-            return JsonResponse({"success": False, "error": "Erreur interne du serveur"}, status=500)
+            return JsonResponse({
+                "success": False,
+                "error": "Erreur interne du serveur"
+            }, status=500)

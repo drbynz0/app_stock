@@ -21,7 +21,6 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
   List<FactureClient> internalFactures = [];
   List<InternalOrder> internalOrders = []; // Vous devez récupérer cette liste
   List<Client> clients = []; // Vous devez récupérer cette liste
-  AppData appData = AppData();
 
   @override
   void initState() {
@@ -31,6 +30,7 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
 
   // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
+    final appData = Provider.of<AppData>(context, listen: false);
     final availableFactures = await FactureClientController.getFactures();
     final availableInternalOrders = appData.internalOrders;
     final availableClients = appData.clients;

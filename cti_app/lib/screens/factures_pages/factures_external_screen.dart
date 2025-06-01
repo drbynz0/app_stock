@@ -32,11 +32,11 @@ class FacturesExternalScreenState extends State<FacturesExternalScreen> {
   Future<void> _refreshOption() async {
     final availableFactures = await FactureSupplierController.getFactures();
     final availableExternalOrders = await ExternalOrdersController.fetchOrders();
-    final availableClients = await SupplierController.getSuppliers();
+    final availableSuppliers = await SupplierController.getSuppliers();
     setState(() {
       externalFactures = availableFactures;
       externalOrders = availableExternalOrders;
-      suppliers = availableClients;
+      suppliers = availableSuppliers;
     });
   }
 

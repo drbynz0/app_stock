@@ -96,7 +96,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
   }
 
   Widget _buildClientCard(BuildContext context) {
-    final order = internalOrders.firstWhere((order) => order.orderNum == facture.orderNum, orElse: () => InternalOrder.empty());
+        final appData = Provider.of<AppData>(context, listen: false);
+    final order = appData.getInternalOrderByOrderNum(facture.orderNum);
     final client = clients.firstWhere((client) => client.id == order.clientId, orElse: () => Client.empty());
     final theme = Provider.of<ThemeProvider>(context);
 

@@ -98,11 +98,11 @@ CORS_ALLOWED_ORIGINS = [
      "http://localhost:3000",
      "http://127.0.0.1:8000",
      " https://3f4a-45-218-97-102.ngrok-free.app",
-     "https://a96d-196-77-234-131.ngrok-free.app"
+     "https://b8d6-196-206-9-241.ngrok-free.app"
  ]
 
 ALLOWED_HOSTS = [
-    'a96d-196-77-234-131.ngrok-free.app',
+    'b8d6-196-206-9-241.ngrok-free.app',
     'optionally-willing-raven.ngrok-free.app',
     '127.0.0.1',
 ]

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:cti_app/services/alert_service.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '/models/product.dart';
 import '/models/external_order.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -128,12 +130,14 @@ class AddExternalArticleDialogState extends State<AddExternalArticleDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     final totalPrice = _selectedProducts.entries.fold(0.0, (sum, entry) {
       final product = widget.availableProducts.firstWhere((p) => p.code == entry.key);
       return sum + (product.price * entry.value);
     });
 
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -162,7 +166,7 @@ class AddExternalArticleDialogState extends State<AddExternalArticleDialog> {
                 prefixIcon: const Icon(Icons.search),
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.barcode_reader, color: Colors.blue),
+                  icon: Icon(Icons.barcode_reader, color: theme.iconColor),
                   onPressed: () async {
                     final scannedCode = await _scanBarcode();
                     if (scannedCode != null) {
@@ -227,7 +231,7 @@ class AddExternalArticleDialogState extends State<AddExternalArticleDialog> {
                   final quantity = _selectedProducts[product.code] ?? 0;
 
                   return Card(
-                    color: quantity > 0 ? const Color.fromARGB(255, 114, 185, 243) : const Color.fromARGB(255, 227, 237, 242),
+                    color: quantity > 0 ? const Color.fromARGB(255, 114, 185, 243) : theme.cardColor,
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       title: Text(product.name),
