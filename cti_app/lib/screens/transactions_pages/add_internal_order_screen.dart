@@ -102,7 +102,7 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
           date: DateTime.now(),
           paymentMethod: _paymentMethod,
           totalPrice: totalPrice,
-          paidPrice: paidPrice,
+          paidPrice: - paidPrice,
           remainingPrice: remainingPrice,
           description: _descriptionController.text,
           status: _status,

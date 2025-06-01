@@ -23,7 +23,7 @@ DB_CONFIG = {
 async def call_groq_api(client, question):
     """Appelle l'API Groq avec un prompt orienté gestion commerciale"""
     payload = {
-        "model": "llama3-70b-8192",
+        "model": "gemma2-9b-it",
         "messages": [
             {
                 "role": "system",

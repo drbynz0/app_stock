@@ -556,6 +556,7 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
       if (success && mounted) {
         await appData.fetchInternalOrders();
         await _refreshOption();
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Commande de ${order.clientName} supprimé avec succès'),
