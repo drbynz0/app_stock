@@ -95,6 +95,7 @@ ROOT_URLCONF = 'cti_app_dj.urls'
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "https://appstock-production.up.railway.app",
      "http://localhost:3000",
      "http://127.0.0.1:8000",
      " https://3f4a-45-218-97-102.ngrok-free.app",
@@ -102,6 +103,7 @@ CORS_ALLOWED_ORIGINS = [
  ]
 
 ALLOWED_HOSTS = [
+    'appstock-production.up.railway.app'
     'b8d6-196-206-9-241.ngrok-free.app',
     'optionally-willing-raven.ngrok-free.app',
     '127.0.0.1',
