@@ -161,6 +161,47 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
         }
         widget.onOrderUpdated(updatedOrder);
 
+      // Vérification de l'état de la commande
+      if (_status == OrderStatus.completed) {
+        // Mise à jour du stock pour chaque produit
+        for (var item in _items) {
+          final productIndex = _availableProducts.indexWhere(
+              (product) => product.code == item.productRef);
+          
+          if (productIndex != -1) {
+            final product = _availableProducts[productIndex];
+            final newStock = product.stock - item.quantity;
+            
+            try {
+              // Mise à jour en local
+              setState(() {
+                _availableProducts[productIndex] = product.copyWith(
+                  stock: newStock,
+                  available: newStock > 0,
+                );
+              });
+
+              // Mise à jour sur le serveur
+              await ProductController.updateProductStock(
+                productId: product.id,
+                newStock: newStock,
+              );
+
+              debugPrint('Stock mis à jour pour ${product.name}');
+            } catch (e) {
+              debugPrint('Erreur lors de la mise à jour du stock pour ${product.name}: $e');
+              // Annuler la modification locale si l'API échoue
+              setState(() {
+                _availableProducts[productIndex] = product;
+              });
+              // Vous pourriez choisir de relancer l'exception ici si nécessaire
+            }
+          }
+        }
+
+        // Ajouter la facture si le statut est "Terminée"
+      }
+
         FactureClient.updateFactureForOrder(updatedOrder);
 
         Provider.of<ActivityService>(context, listen: false).addActivity(

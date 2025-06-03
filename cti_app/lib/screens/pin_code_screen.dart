@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -85,6 +87,18 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
         margin: const EdgeInsets.all(8),
         width: 70,
         height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Text(
           label,
           style: const TextStyle(
@@ -96,7 +110,6 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
       ),
     );
   }
-
   Widget _buildKeyboard() {
     return Column(
       children: [

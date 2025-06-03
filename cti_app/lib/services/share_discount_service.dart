@@ -29,7 +29,7 @@ class ShareDiscountService {
     required Discount discount,
     required Product product,
   }) async {
-    final String text = _generateShareText(discount, product);
+    final String text = '${_generateShareText(discount, product)}\n Vous pouvez nous contacter sur WhatsApp\n https://api.whatsapp.com/send?phone=212642774321';
     final String url = 'https://wa.me/?text=${Uri.encodeComponent(text)}';
 
     if (await canLaunchUrl(Uri.parse(url))) {

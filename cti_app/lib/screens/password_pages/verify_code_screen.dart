@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously f
-// ignore_for_file: prefer_const_constructors f
 
 import 'package:cti_app/constants/app_constant.dart';
 import 'package:cti_app/screens/password_pages/new_password_screen.dart';

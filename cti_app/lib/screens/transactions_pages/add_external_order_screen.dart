@@ -37,7 +37,8 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
 
         // Méthode pour rafraîchir les produits
     Future<void> _loadOption() async {
-      final updatedProducts = await ProductController.fetchProducts();
+      final appData = Provider.of<AppData>(context, listen: false);
+      final updatedProducts = appData.products;
       final updatedSuppliers = await SupplierController.getSuppliers();
       setState(() {
         _availableProducts = updatedProducts;
@@ -133,6 +134,7 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
                 newStock: newStock,
               );
 
+
               debugPrint('Stock mis à jour pour ${product.name}');
             } catch (e) {
               debugPrint('Erreur lors de la mise à jour du stock pour ${product.name}: $e');
@@ -144,12 +146,11 @@ class AddExternalOrderScreenState extends State<AddExternalOrderScreen> {
             }
           }
         }
-
-        // Ajouter la facture si le statut est "Terminée"
-        FactureFournisseur.addFactureForOrder(createdOrder);
       }
-      
-      widget.onOrderAdded(createdOrder);
+  
+      // Ajouter la facture si le statut est "Terminée"
+      FactureFournisseur.addFactureForOrder(createdOrder);  widget.onOrderAdded(createdOrder);
+
       Provider.of<ActivityService>(context, listen: false).addActivity(
         "Ajout d’une nouvelle commande externe pour : ${newOrder.supplierName}",
         'shopping_cart',

@@ -37,6 +37,12 @@ class SellerPrivileges(models.Model):
     add_client = models.BooleanField(default=False)
     edit_client = models.BooleanField(default=False)
     delete_client = models.BooleanField(default=False)
+    add_supplier = models.BooleanField(default=False)
+    edit_supplier = models.BooleanField(default=False)
+    delete_supplier = models.BooleanField(default=False)
+    add_category = models.BooleanField(default=False)
+    edit_category = models.BooleanField(default=False)
+    delete_category = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Privileges for {self.user.username}"

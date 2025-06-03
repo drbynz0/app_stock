@@ -11,7 +11,9 @@ class SellerPrivilegesSerializer(serializers.ModelSerializer):
         fields = [
             'add_product', 'edit_product', 'delete_product',
             'add_order', 'edit_order', 'delete_order',
-            'add_client', 'edit_client', 'delete_client'
+            'add_client', 'edit_client', 'delete_client',
+            'add_supplier', 'edit_supplier', 'delete_supplier',
+            'add_category', 'edit_category', 'delete_category',
         ]
 
 class UserSerializer(serializers.ModelSerializer):

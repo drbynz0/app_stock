@@ -253,7 +253,7 @@ class _SuppliersManagementScreenState extends State<SuppliersManagementScreen> {
               padding: const EdgeInsets.only(bottom: 55.0),
               child: FloatingActionButton(
                 onPressed: () => _showAddSupplierDialog(),
-                backgroundColor: const Color(0xFF004A99),
+                backgroundColor: theme.buttonColor,
                 child: const Icon(Icons.add, color: Colors.white),
               ),
             )

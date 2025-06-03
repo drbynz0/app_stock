@@ -2,6 +2,7 @@
 
 import 'package:cti_app/screens/pin_code_screen.dart';
 import 'package:cti_app/screens/settings_pages/about_section.dart';
+import 'package:cti_app/screens/settings_pages/profile_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
@@ -86,7 +87,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsTile(
                 icon: Icons.person,
                 title: 'Profil',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                },
               ),
               _buildSettingsTile(
                 icon: notificationsEnabled

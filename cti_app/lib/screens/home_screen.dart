@@ -17,7 +17,7 @@ import '/models/external_order.dart';
 import '../widgets/order_stats_charts.dart';
 import 'package:provider/provider.dart';
 import '../services/app_data_service.dart';
-import 'notification_pages/notification_screen.dart';
+//import 'notification_pages/notification_screen.dart';
 import '/services/activity_service.dart';
 
 
@@ -38,7 +38,7 @@ class HomeScreenState extends State<HomeScreen> {
    late List<ExternalOrderRecord> externalOrderRecords;
    late List<InternalOrderRecord> internalOrderRecords;
   late List<SaleRecord> _allRecords;
-   int _unreadNotificationsCount = 3;
+  // int _unreadNotificationsCount = 3;
 
   @override
   void initState() {
@@ -294,7 +294,7 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        actions: [
+       /* actions: [
           Stack(
             children: [
               IconButton(
@@ -310,7 +310,7 @@ class HomeScreenState extends State<HomeScreen> {
                     });
                   });
                 },
-              ),
+              ), 
               if (_unreadNotificationsCount > 0)
                 Positioned(
                   right: 8,
@@ -337,7 +337,7 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
             ],
           ),
-        ],
+        ], */
       ),
       drawer: Drawer(
         backgroundColor: theme.backgroundColor,

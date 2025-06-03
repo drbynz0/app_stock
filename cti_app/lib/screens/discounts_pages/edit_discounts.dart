@@ -110,16 +110,6 @@ class _EditDiscountScreenState extends State<EditDiscountScreen> {
       initialDate: isStartDate ? _startDate ?? DateTime.now() : _endDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(DateTime.now().year + 1),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.blue.shade800,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     
     if (picked != null) {

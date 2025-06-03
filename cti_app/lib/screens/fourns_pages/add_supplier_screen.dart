@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:cti_app/controller/supplier_controller.dart';
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/controller/product_controller.dart';
@@ -117,7 +118,6 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
               focusNode: focusNode,
               decoration: InputDecoration(
                 labelText: 'Activité',
-                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.shopping_cart),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.add),
@@ -187,7 +187,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SingleChildScrollView(
@@ -201,9 +203,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Fournisseur',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.titleColor),
                     textAlign: TextAlign.left,
                   ),
                   IconButton(
@@ -216,9 +218,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
               TextFormField(
                 controller: _iceController,
-                decoration: const InputDecoration(
+                decoration:InputDecoration(
                   labelText: 'ICE',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (value) {
@@ -235,9 +237,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
               // Informations du fournisseur
               TextFormField(
                 controller: _nameRespoController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Responsable',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (value) {
@@ -251,9 +253,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
               TextFormField(
                 controller: _nameEntController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Entreprise',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.business),
                 ),
                 validator: (value) {
@@ -267,9 +269,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -278,9 +280,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Téléphone',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
@@ -289,9 +291,9 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
 
               TextFormField(
                 controller: _addressController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Adresse',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: theme.textColor),
                   prefixIcon: Icon(Icons.location_on),
                 ),
               ),
@@ -304,7 +306,7 @@ class AddSupplierScreenState extends State<AddSupplierScreen> {
               ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF004A99),
+                  backgroundColor: theme.buttonColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: const Text('Enregistrer', style: TextStyle(fontSize: 16, color: Colors.white)),

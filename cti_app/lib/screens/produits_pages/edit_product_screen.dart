@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, avoid_print
 
+import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -111,6 +112,7 @@ class EditProductScreenState extends State<EditProductScreen> {
   }
 
  Widget _buildImageItem(int index) {
+  final theme = Provider.of<ThemeProvider>(context);
   final hasNewImage = _newImageFiles[index] != null;
   final hasCurrentImage = index < _currentImageUrls.length && _currentImageUrls[index].isNotEmpty;
 
@@ -118,9 +120,8 @@ class EditProductScreenState extends State<EditProductScreen> {
     onTap: () => _pickImage(index),
     child: Container(
       decoration: BoxDecoration(
-        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.shade800),
+        border: Border.all(color: theme.borderColor),
       ),
       child: Stack(
         fit: StackFit.expand,
@@ -175,10 +176,11 @@ Widget _buildImagePreview(File file) {
   }
 
   Widget _buildPlaceholderIcon() {
-    return const Column(
+    final theme = Provider.of<ThemeProvider>(context);
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.add_a_photo, size: 30, color: Colors.blue),
+        Icon(Icons.add_a_photo, size: 30, color: theme.iconColor),
         SizedBox(height: 4),
         Text('Image'),
       ],
@@ -267,7 +269,9 @@ void _submitForm() async {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -275,7 +279,6 @@ void _submitForm() async {
       elevation: 4,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -299,20 +302,20 @@ void _submitForm() async {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.edit, color: Colors.blue.shade800, size: 28),
+                        Icon(Icons.edit, color: theme.iconColor, size: 28),
                         const SizedBox(width: 10),
                         Text(
                           'Modifier Produit',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
+                            color: theme.titleColor,
                           ),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.grey[600]),
+                      icon: Icon(Icons.close, color: theme.iconColor),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -325,7 +328,7 @@ void _submitForm() async {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blue.shade800,
+                    color: theme.titleColor,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -337,17 +340,9 @@ void _submitForm() async {
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'Nom du produit',
-                    floatingLabelStyle: TextStyle(color: Colors.blue.shade800),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blue.shade800, width: 1.5),
-                    ),
+                    labelStyle: TextStyle(color: theme.textColor),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    prefixIcon: Icon(Icons.shopping_bag_outlined, color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.shopping_bag_outlined, color: theme.iconColor),
                   ),
                   validator: (value) => value?.isEmpty ?? true ? 'Ce champ est obligatoire' : null,
                 ),
@@ -357,17 +352,9 @@ void _submitForm() async {
                   controller: _priceController,
                   decoration: InputDecoration(
                     labelText: 'Prix',
-                    floatingLabelStyle: TextStyle(color: Colors.blue.shade800),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blue.shade800, width: 1.5),
-                    ),
+                    labelStyle: TextStyle(color: theme.textColor),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    prefixIcon: Icon(Icons.attach_money_outlined, color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.attach_money_outlined, color: theme.iconColor),
                     prefixText: 'DH ',
                   ),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
@@ -383,17 +370,9 @@ void _submitForm() async {
                   controller: _stockController,
                   decoration: InputDecoration(
                     labelText: 'Quantité en stock',
-                    floatingLabelStyle: TextStyle(color: Colors.blue.shade800),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blue.shade800, width: 1.5),
-                    ),
+                    labelStyle: TextStyle(color: theme.textColor),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    prefixIcon: Icon(Icons.inventory_2_outlined, color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.inventory_2_outlined, color: theme.iconColor),
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -418,8 +397,8 @@ void _submitForm() async {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   initialValue: productCategory,
                   isRequired: true,
-                  dropdownColor: Colors.white,
-                  style: TextStyle(color: Colors.blue.shade800),
+                  dropdownColor: theme.dialogColor,
+                  style: TextStyle(color: theme.textColor),
                 ),
                 const SizedBox(height: 24),
 
@@ -428,17 +407,8 @@ void _submitForm() async {
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Description',
-                    floatingLabelStyle: TextStyle(color: Colors.blue.shade800),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.blue.shade800, width: 1.5),
-                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    prefixIcon: Icon(Icons.description_outlined, color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.description_outlined, color: theme.iconColor),
                   ),
                   maxLines: 3,
                 ),
@@ -472,7 +442,7 @@ void _submitForm() async {
                       child: ElevatedButton(
                         onPressed: _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade800,
+                          backgroundColor: theme.buttonColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),

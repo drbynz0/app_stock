@@ -24,6 +24,12 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
   bool canAddOrder = false;
   bool canEditOrder = false;
   bool canDeleteOrder = false;
+  bool canAddSupplier = false;
+  bool canEditSupplier = false;
+  bool canDeleteSupplier = false;
+  bool canAddCategory = false;
+  bool canEditCategory = false;
+  bool canDeleteCategory = false;
   bool isLoading = true;
   bool isSaving = false;
 
@@ -44,6 +50,12 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
       canEditOrder = widget.seller['privileges']['edit_order'] ?? false;
       canDeleteOrder = widget.seller['privileges']['delete_order'] ?? false;
       canDeleteProduct = widget.seller['privileges']['delete_product'] ?? false;
+      canAddSupplier = widget.seller['privileges']['add_supplier'] ?? false;
+      canEditSupplier = widget.seller['privileges']['edit_supplier'] ?? false;
+      canDeleteSupplier = widget.seller['privileges']['delete_supplier'] ?? false;
+      canAddCategory = widget.seller['privileges']['add_category'] ?? false;
+      canEditCategory = widget.seller['privileges']['edit_category'] ?? false;
+      canDeleteCategory = widget.seller['privileges']['delete_category'] ?? false;
       isLoading = false;
     });
   }
@@ -91,6 +103,12 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
       case 'add_order': canAddOrder = value; break;
       case 'edit_order': canEditOrder = value; break;
       case 'delete_order': canDeleteOrder = value; break;
+      case 'add_supplier': canAddSupplier = value; break;
+      case 'edit_supplier': canEditSupplier = value; break;
+      case 'delete_supplier': canDeleteSupplier = value; break;
+      case 'add_category': canAddCategory = value; break;
+      case 'edit_category': canEditCategory = value; break;
+      case 'delete_category': canDeleteCategory = value; break;
     }
   }
 
@@ -246,6 +264,52 @@ class _SellerDetailScreenState extends State<SellerDetailScreen> {
                 'delete_order',
                 'Supprimer des commandes',
                 canDeleteOrder,
+              ),
+            ]
+          ),
+        ),
+        SizedBox(height: 16),    
+        Card(
+          child: Column(
+            children: [
+              _buildSectionHeader('Gestion des Fournisseur'),
+              _buildPrivilegeSwitch(
+                'add_supplier',
+                'Ajouter des fournisseurs',
+                canAddSupplier,
+              ),
+              _buildPrivilegeSwitch(
+                'edit_supplier',
+                'Modifier des fournisseurs',
+                canEditSupplier,
+              ),
+              _buildPrivilegeSwitch(
+                'delete_supplier',
+                'Supprimer des fournisseurs',
+                canDeleteSupplier,
+              ),
+            ]
+          ),
+        ),
+        SizedBox(height: 16),    
+        Card(
+          child: Column(
+            children: [
+              _buildSectionHeader('Gestion des Catégories'),
+              _buildPrivilegeSwitch(
+                'add_category',
+                'Ajouter des catégories',
+                canAddCategory,
+              ),
+              _buildPrivilegeSwitch(
+                'edit_category',
+                'Modifier des catégories',
+                canEditCategory,
+              ),
+              _buildPrivilegeSwitch(
+                'delete_category',
+                'Supprimer des catégories',
+                canDeleteCategory,
               ),
             ]
           ),

@@ -146,7 +146,7 @@ class DetailsProductScreenState extends State<DetailsProductScreen> {
                     ),
                   ),
                 ),
-                
+                SizedBox(width: 20),
                Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.inventory, color: Colors.white),
@@ -463,6 +463,7 @@ void _manageStock(BuildContext context) {
 
 void _publishProduct(BuildContext context) {
   bool isAvailable = product.available;
+  final theme = Provider.of<ThemeProvider>(context, listen: false);
 
   showDialog(
     context: context,
@@ -470,6 +471,7 @@ void _publishProduct(BuildContext context) {
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: theme.dialogColor,
             title: const Text('Publication du produit'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -477,6 +479,8 @@ void _publishProduct(BuildContext context) {
                 const Text('Souhaitez-vous publier ce produit ?'),
                 const SizedBox(height: 10),
                 SwitchListTile(
+                  inactiveThumbColor: theme.iconColor,
+                  activeColor: theme.textColor,
                   title: Text(isAvailable ? 'Publié' : 'Non publié'),
                   value: isAvailable,
                   onChanged: (bool value) async {
@@ -490,8 +494,9 @@ void _publishProduct(BuildContext context) {
                     try {
                       await ProductController.updateAvailable(product.id, value);
 
-                      setState(() { 
-                        isAvailable = value; 
+                      setState(() {
+                        isAvailable = value;
+                        product.available = value;
                         product.updatedAt = DateTime.now();
                       });
 
