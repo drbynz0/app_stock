@@ -1,6 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:cti_app/controller/delivery_notes_controller.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -34,9 +34,9 @@ class _DeliveryNotesScreenState extends State<DeliveryNotesScreen> {
   }
 
   void _loadDeliveryNotes() async {
-    final deliveryNotes = await DeliveryNoteController.fetchDeliveryNotes();
+    final appData = Provider.of<AppData>(context, listen: false);
     setState(() {
-      _deliveryNotes = deliveryNotes;
+      _deliveryNotes = appData.deliveryNotes;
       _filteredNotes = _deliveryNotes;
     });
   }

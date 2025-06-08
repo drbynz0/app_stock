@@ -52,7 +52,7 @@ void dispose() {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        appData.refreshDataService(context);
+        appData.refreshData();
       }
     });
 

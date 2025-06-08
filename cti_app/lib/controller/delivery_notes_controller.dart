@@ -40,7 +40,7 @@ class DeliveryNoteController {
   /// Modifier un bon
   static Future<DeliveryNote> updateDeliveryNote(int id, DeliveryNote note) async {
     final response = await http.put(
-      Uri.parse('$baseUrl/$id/'),
+      Uri.parse('$baseUrl$id/'),
       headers: await ApiService.headers(),
       body: jsonEncode(note.toJson()),
     );
@@ -55,7 +55,7 @@ class DeliveryNoteController {
   /// Supprimer un bon
   static Future<void> deleteDeliveryNote(int id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/$id/'),
+      Uri.parse('$baseUrl$id/'),
       headers: await ApiService.headers(),
     );
 
@@ -67,7 +67,7 @@ class DeliveryNoteController {
   /// Récupérer un bon par ID
   static Future<DeliveryNote> getNoteById(int id) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$id/'),
+      Uri.parse('$baseUrl$id/'),
       headers: await ApiService.headers(),
     );
 

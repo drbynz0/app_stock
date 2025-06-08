@@ -57,10 +57,9 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _refreshOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
-    appData.refreshDataService(context);
     await appData.fetchUserData();
     Future.microtask(() async {
-      appData.refreshDataService(context);
+      //appData.refreshDataService(context);
       final activityService = Provider.of<ActivityService>(context, listen: false);
       await activityService.fetchActivities();
     });

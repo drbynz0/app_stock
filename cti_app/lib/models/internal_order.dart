@@ -3,7 +3,7 @@ class InternalOrder {
   final String orderNum;
   final int? clientId;
   final String clientName;
-  final TypeOrder typeOrder;
+  TypeOrder typeOrder;
   final DateTime date;
   final PaymentMethod paymentMethod;
   final double totalPrice;

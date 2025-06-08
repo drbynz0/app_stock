@@ -1,3 +1,5 @@
+
+import 'package:cti_app/controller/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -15,7 +17,10 @@ class InternalFactureService {
     required Client client,
   }) async {
     try {
-      final pdfBytes = await _generateFacturePdf(facture, client, internalOrder);
+      final updatedProfile = await UserController.fetchUserProfile();
+      final profile = updatedProfile;
+      final pdfBytes = await _generateFacturePdf(profile, facture, client, internalOrder);
+     // final pdfBytes = await _generateFacturePdf(facture, client, internalOrder);
       await Printing.layoutPdf(onLayout: (format) => pdfBytes);
     } catch (e) {
       // ignore: use_build_context_synchronously
@@ -28,7 +33,7 @@ class InternalFactureService {
     }
   }
 
-static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client client, InternalOrder internalOrder) async {
+static Future<Uint8List> _generateFacturePdf(Map<String, dynamic> profile, FactureClient facture, Client client, InternalOrder internalOrder) async {
   final pdf = pw.Document();
   final logo = await _getLogoImage();
 
@@ -40,7 +45,7 @@ static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client clien
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.symmetric(horizontal: 0.5 * PdfPageFormat.cm, vertical: 0.5 * PdfPageFormat.cm),
-      header: (pw.Context context) => _buildHeaderSection(logo, facture, client, context),
+      header: (pw.Context context) => _buildHeaderSection(profile, logo, facture, client, context),
       footer: (pw.Context context) => pw.Column(
         children: [
           pw.Row(
@@ -72,7 +77,7 @@ static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client clien
   return pdf.save();
 }
 
-  static pw.Widget _buildHeaderSection(pw.ImageProvider logo, FactureClient facture, Client client, pw.Context context) {
+  static pw.Widget _buildHeaderSection(Map<String, dynamic> profile, pw.ImageProvider logo, FactureClient facture, Client client, pw.Context context) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -85,7 +90,7 @@ static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client clien
                 children: [
                   _buildHeader(logo),
                   pw.SizedBox(height: 30),
-                  _buildFollowedInfo()
+                  _buildFollowedInfo(profile)
                 ],
               ),
             ),
@@ -133,7 +138,7 @@ static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client clien
     );
   }
 
-    static pw.Widget _buildFollowedInfo() {
+    static pw.Widget _buildFollowedInfo(Map<String, dynamic> profile) {
     return pw.Container(
       alignment: pw.Alignment.bottomLeft,
       decoration: pw.BoxDecoration(
@@ -156,7 +161,7 @@ static Future<Uint8List> _generateFacturePdf(FactureClient facture, Client clien
               ),
               pw.Padding(
                 padding: const pw.EdgeInsets.all(3),
-                child: pw.Text('HADJAR', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                child: pw.Text('${profile['first_name']} ${profile['last_name']}', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
               ),
             ],
           ),

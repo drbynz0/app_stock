@@ -51,7 +51,7 @@ class FactureClientController {
   // 🔹 Supprimer une facture
   static Future<void> deleteFacture(int id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/$id/'),
+      Uri.parse('$baseUrl$id/'),
       headers: await ApiService.headers(),
       );
     if (response.statusCode != 204) {
@@ -63,7 +63,7 @@ class FactureClientController {
   static Future<FactureClient> updateFacture(FactureClient facture) async {
     if (facture.id == null) throw Exception("ID manquant pour la mise à jour");
     final response = await http.put(
-      Uri.parse('$baseUrl/${facture.id}/'),
+      Uri.parse('$baseUrl${facture.id}/'),
       headers: await ApiService.headers(),
       body: json.encode(facture.toJson()),
     );
@@ -122,7 +122,7 @@ class FactureSupplierController {
   // 🔹 Supprimer une facture
   static Future<void> deleteFacture(int id) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/$id/'),
+      Uri.parse('$baseUrl$id/'),
       headers: await ApiService.headers(),
       );
     if (response.statusCode != 204) {

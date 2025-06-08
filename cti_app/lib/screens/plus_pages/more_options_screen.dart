@@ -1,13 +1,10 @@
 
-import 'package:cti_app/controller/external_orders_controller.dart';
-import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/screens/categorie/categorie_management_screen.dart';
 import 'package:cti_app/screens/employes/sellers_management_screen.dart';
-import 'package:cti_app/services/profile_service.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/controller/product_controller.dart';
 import '/screens/delivery_pages/delivery_management.dart';
 import '../discounts_pages/discounts_management.dart';
 import '../factures_pages/factures_management_screen.dart';
@@ -39,22 +36,23 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
     // Initialisation ou chargement de données si nécessaire
   }
   Future<void> _loadOption() async {
-    final updatedProfile = Provider.of<ProfileService>(context, listen: false).userProfile;
+    final appData = Provider.of<AppData>(context, listen: false);
+    final updatedProfile = appData.userData;
 
-    final fetchInternalOrders = await InternalOrdersController.fetchOrders();
-    final fetchExternalOrders = await ExternalOrdersController.fetchOrders();
-    final fetchedProducts = await ProductController.fetchProducts();
+    final fetchInternalOrders = appData.internalOrders;
+    final fetchExternalOrders = appData.externalOrders;
+    final fetchedProducts = appData.products;
     setState(() {
       _profile = updatedProfile;
       internalOrders = fetchInternalOrders;
       externalOrders = fetchExternalOrders;
-      products = fetchedProducts;
+      products = fetchedProducts;    
     });
+
   }
 
   @override
   Widget build(BuildContext context) {
-
     options = [
       {'icon': Icons.percent, 'label': 'Discounts'},
       {'icon': Icons.local_shipping, 'label': 'Fournisseurs'},
@@ -62,17 +60,15 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
       {'icon': Icons.receipt_long, 'label': 'Factures'},
       {'icon': Icons.assignment, 'label': 'Bon à délivrer'},
       {'label': 'Catégories',  'icon': Icons.category},
+      if(_profile!['is_staff'] == true)
+      {'label': 'Employés', 'icon': Icons.people},
     ];
-
     return Scaffold(
       body: _buildBody(options, context),
     );
   }
 
   Widget _buildBody(List<Map<String, dynamic>> options, BuildContext context) {
-    if(_profile!['is_staff'] == true) {
-      options.add({'label': 'Employés', 'icon': Icons.people});
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: ListView.builder(
@@ -82,6 +78,7 @@ class MoreOptionsScreenState extends State<MoreOptionsScreen> {
         },
       ),
     );
+    
   }
 
   Widget _buildListTile(Map<String, dynamic> option, BuildContext context) {

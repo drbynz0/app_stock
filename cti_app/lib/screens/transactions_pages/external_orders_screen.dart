@@ -45,7 +45,7 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        appData.refreshDataService(context);
+        appData.refreshData();
       }
     });
 
@@ -352,10 +352,10 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
                 children: [
                   Text(order.orderNum, style: TextStyle(color: theme.secondaryTextColor)),
-                  const Spacer(),
+                  const SizedBox(width: 20),
                   Text('${order.date.day}/${order.date.month}/${order.date.year}', 
                       style: TextStyle(color: theme.secondaryTextColor)),
                 ],
@@ -435,9 +435,11 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
           await appData.fetchExternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Commande ajoutée avec succès'),
+            SnackBar(
+              content: const Text('Commande ajoutée avec succès'),
               backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
           Navigator.pop(context);
@@ -456,10 +458,12 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
               await _handleDeleteOrder(appData, order);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Erreur : ID de la commande est null'),
+                SnackBar(
+                  content: const Text('Erreur : ID de la commande est null'),
                   backgroundColor: Colors.red,
-                  duration: Duration(seconds: 3),
+                  duration: const Duration(seconds: 3),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               );
             }
@@ -487,6 +491,8 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
           SnackBar(
             content: Text('Commande de ${order.supplierName} supprimée avec succès'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
         
@@ -515,9 +521,11 @@ class ExternalOrdersScreenState extends State<ExternalOrdersScreen> {
           await appData.fetchExternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Commande mise à jour avec succès'),
+            SnackBar(
+              content: const Text('Commande mise à jour avec succès'),
               backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
           Navigator.pop(context);

@@ -88,7 +88,7 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime(2025),
+      lastDate: DateTime(2070),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -142,7 +142,7 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
           status: _status,
           items: _items,
           payments: [],
-          updated: DateTime.now(),
+          updated: _selectedDate,
         );
 
         final appData = Provider.of<AppData>(context, listen: false);
@@ -202,7 +202,7 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
         // Ajouter la facture si le statut est "Terminée"
       }
 
-        FactureClient.updateFactureForOrder(updatedOrder);
+        FactureClient.updateFactureForOrder(updatedOrder, paidPrice);
 
         Provider.of<ActivityService>(context, listen: false).addActivity(
         "Modification d’une commande interne pour : ${updatedOrder.clientName}",
@@ -211,9 +211,11 @@ class EditInternalOrderScreenState extends State<EditInternalOrderScreen> {
         Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez ajouter au moins un article'),
+          SnackBar(
+            content: const Text('Veuillez ajouter au moins un article'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }

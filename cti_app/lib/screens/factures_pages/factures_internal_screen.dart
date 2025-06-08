@@ -1,4 +1,3 @@
-import 'package:cti_app/controller/facture_controller.dart';
 import 'package:cti_app/models/client.dart';
 import 'package:cti_app/services/app_data_service.dart';
 import 'package:cti_app/theme/theme_provider.dart';
@@ -31,7 +30,7 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
   // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
-    final availableFactures = await FactureClientController.getFactures();
+    final availableFactures = appData.facturesClient;
     final availableInternalOrders = appData.internalOrders;
     final availableClients = appData.clients;
     setState(() {
@@ -101,8 +100,8 @@ class FacturesInternalScreenState extends State<FacturesInternalScreen> {
       MaterialPageRoute(
         builder: (context) => InternalFactureDetailScreen(
           facture: facture,
-          internalOrders: internalOrders, // Passez la liste des commandes
-          clients: clients, // Passez la liste des clients
+          internalOrders: internalOrders,
+          clients: clients,
         ),
       ),
     );

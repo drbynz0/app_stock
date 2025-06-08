@@ -165,7 +165,7 @@ class AddInternalOrderScreenState extends State<AddInternalOrderScreen> {
 
         // Ajouter la facture si le statut est "Terminée"
       }
-        FactureClient.addFactureForOrder(createdOrder);
+        FactureClient.addFactureForOrder(createdOrder, paidPrice);
 
         // Créer un bon de livraison si la commande est en ligne
         if (_type == TypeOrder.online) {

@@ -52,7 +52,7 @@ class _CategorieScreenState extends State<CategorieScreen> {
 
   Future<void> _loadOption() async {
     final appData = Provider.of<AppData>(context, listen: false);
-    await appData.fetchCategories();
+    appData.refreshData();
 
     if (mounted) {
       final query = _searchController.text.toLowerCase();

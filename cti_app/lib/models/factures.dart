@@ -72,7 +72,7 @@ Map<String, dynamic> toJson() {
     _internalFactures.insert(0, facture);
   }
 
-  static void addFactureForOrder(InternalOrder order) async {
+  static void addFactureForOrder(InternalOrder order, double paidPrice) async {
   final newFacture = FactureClient(
     ref: 'FI-${DateTime.now().millisecondsSinceEpoch}',
     orderNum: order.orderNum,
@@ -81,7 +81,7 @@ Map<String, dynamic> toJson() {
     amount: order.totalPrice,
     date: '${order.date.day}/${order.date.month}/${order.date.year}',
     description: order.description ?? 'Facture pour commande ${order.id}',
-    isPaid: order.paidPrice >= order.totalPrice, 
+    isPaid: paidPrice >= order.totalPrice, 
     isInternal: true,
   );
   
@@ -89,7 +89,7 @@ Map<String, dynamic> toJson() {
   await FactureClientController.addFacture(newFacture);
 }
 
-  static void updateFactureForOrder(InternalOrder order) async {
+  static void updateFactureForOrder(InternalOrder order, double paidPrice) async {
     final oldFacture = await getFactureByOrderNum(order.orderNum);
     final newFacture = FactureClient(
       id: oldFacture.id,
@@ -100,7 +100,7 @@ Map<String, dynamic> toJson() {
       amount: order.totalPrice,
       date: '${order.date.day}/${order.date.month}/${order.date.year}',
       description: order.description ?? 'Facture pour commande ${order.id}',
-      isPaid: order.paidPrice >= order.totalPrice, isInternal: true,
+      isPaid: paidPrice >= order.totalPrice, isInternal: true,
     );
     
     // Ajouter la facture à votre liste de factures

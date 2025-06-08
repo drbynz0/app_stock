@@ -11,8 +11,9 @@ class AppConstant {
   static const String USER_EMAIL = "user_email_halal_food_app";
 
   // api
-  static const String BASE_FILE = "http://127.0.0.1:8000";
+  //static const String BASE_FILE = "http://127.0.0.1:8000";
   //static const String BASE_FILE = "https://drbynz00.pythonanywhere.com";
+  static const String BASE_FILE = "https://optionally-willing-raven.ngrok-free.app";
 
   static const String BASE_URL = "$BASE_FILE/api/";
 

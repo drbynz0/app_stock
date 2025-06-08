@@ -470,7 +470,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                         if(updatedStatus) {
                           // Ajouter la facture si le statut est "Terminée"
                           if (newStatus == OrderStatus.completed || newStatus == OrderStatus.toPay) {
-                            FactureClient.addFactureForOrder(order);
+                            FactureClient.addFactureForOrder(order, order.paidPrice);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Statut mis à jour et facture créée'),
@@ -613,7 +613,7 @@ class DetailsInternalOrderScreenState extends State<DetailsInternalOrderScreen> 
                 });
 
                                         // Ajouter la facture si le statut est "Terminée"
-                  FactureClient.updateFactureForOrder(order);
+                  FactureClient.updateFactureForOrder(order, order.paidPrice);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Statut mis à jour et facture créée'),

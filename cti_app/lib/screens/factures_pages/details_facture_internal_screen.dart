@@ -22,9 +22,8 @@ class InternalFactureDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appData = Provider.of<AppData>(context, listen: false);
-    final order = appData.getInternalOrderByOrderNum(facture.orderNum);
-    final client = appData.getClientById(order.clientId!);
+    final order = internalOrders.firstWhere((order) => order.orderNum == facture.orderNum, orElse: () => InternalOrder.empty());
+    final client = clients.firstWhere((client) =>  client.id == order.clientId, orElse: () => Client.empty());
 
     final double totalHT = facture.amount;
     final double tva = totalHT * 0.20;

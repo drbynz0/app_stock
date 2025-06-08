@@ -46,7 +46,7 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        appData.refreshDataService(context);
+        appData.refreshData();
       }
     });
 
@@ -409,10 +409,10 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
                 children: [
                   Text(order.orderNum, style: TextStyle(color: theme.secondaryTextColor)),
-                  const Spacer(),
+                  const SizedBox(width: 20),
                   Text('${order.date.day}/${order.date.month}/${order.date.year}', 
                       style: TextStyle(color: theme.secondaryTextColor)),
                 ],
@@ -509,9 +509,11 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
           await appData.fetchInternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Commande ajoutée avec succès'),
+            SnackBar(
+              content: const Text('Commande ajoutée avec succès'),
               backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
           Navigator.pop(context);
@@ -530,10 +532,12 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
               await _handleDeleteOrder(appData, order);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Erreur : ID de la commande est null'),
+                SnackBar(
+                  content: const Text('Erreur : ID de la commande est null'),
                   backgroundColor: Colors.red,
-                  duration: Duration(seconds: 3),
+                  duration: const Duration(seconds: 3),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               );
             }
@@ -544,23 +548,24 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
 
   Future<void> _handleDeleteOrder(AppData appData, InternalOrder order) async {
     try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-      
+      final factureOrder = appData.getFactureClientByOrderNum(order.orderNum);
+      await appData.deleteFactureClient(factureOrder.id!);
+      if(order.typeOrder == TypeOrder.online) {
+        final deliveryOrder = appData.getDeliveryOrderByOrderNum(order.orderNum);
+        await appData.deleteDeliveryOrder(deliveryOrder.id!);
+      }
       final success = await appData.deleteInternalOrder(order.id!);
-      
-      
+
+
       if (success && mounted) {
         await appData.fetchInternalOrders();
         await _refreshOption();
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Commande de ${order.clientName} supprimé avec succès'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
         
@@ -574,6 +579,8 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
           SnackBar(
             content: Text('Erreur: ${e.toString()}'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -589,9 +596,11 @@ class InternalOrdersScreenState extends State<InternalOrdersScreen> {
           await appData.fetchInternalOrders();
           await _refreshOption();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Commande mise à jour avec succès'),
+            SnackBar(
+              content: const Text('Commande mise à jour avec succès'),
               backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
           Navigator.pop(context);

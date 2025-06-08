@@ -27,6 +27,8 @@ class ExternalOrder(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        db_table = 'externalorders_externalorder'
 
 class OrderItem(models.Model):
     order = models.ForeignKey(ExternalOrder, related_name='external_items', on_delete=models.CASCADE)
@@ -36,3 +38,5 @@ class OrderItem(models.Model):
     product_image = models.URLField(blank=True, null=True)
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    class Meta:
+        db_table = 'externalorders_orderitem'

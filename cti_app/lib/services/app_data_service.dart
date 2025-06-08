@@ -4,8 +4,10 @@ import 'dart:io';
 
 import 'package:cti_app/controller/category_controller.dart';
 import 'package:cti_app/controller/customer_controller.dart';
+import 'package:cti_app/controller/delivery_notes_controller.dart';
 import 'package:cti_app/controller/discount_controller.dart';
 import 'package:cti_app/controller/external_orders_controller.dart';
+import 'package:cti_app/controller/facture_controller.dart';
 import 'package:cti_app/controller/historical_controller.dart';
 import 'package:cti_app/controller/internal_orders_controller.dart';
 import 'package:cti_app/controller/product_controller.dart';
@@ -13,7 +15,9 @@ import 'package:cti_app/controller/supplier_controller.dart';
 import 'package:cti_app/controller/user_controller.dart';
 import 'package:cti_app/models/activity.dart';
 import 'package:cti_app/models/category.dart';
+import 'package:cti_app/models/delivery_note.dart';
 import 'package:cti_app/models/discounts.dart';
+import 'package:cti_app/models/factures.dart';
 import 'package:cti_app/services/category_service.dart';
 import 'package:cti_app/services/client_service.dart';
 import 'package:cti_app/services/discount_service.dart';
@@ -41,6 +45,9 @@ class AppData extends ChangeNotifier {
   List<Activity> _activities = [];
   List<Discount> _discounts = [];
   Map<String, dynamic>? _userData = {};
+  List<FactureClient> _facturesClient = [];
+  List<FactureFournisseur> _facturesFournisseur = [];
+  List<DeliveryNote> _deliveryNotes = [];
 
 
 
@@ -59,6 +66,9 @@ class AppData extends ChangeNotifier {
     _myPrivileges = await UserController.fetchUserPrivileges();
     _activities = await HistoricalController.getAllHistorical();
     _discounts = await DiscountController.getDiscounts();
+    _facturesClient = await FactureClientController.getFactures();
+    _facturesFournisseur = await FactureSupplierController.getFactures();
+    _deliveryNotes = await DeliveryNoteController.fetchDeliveryNotes();
     notifyListeners();
   }
 
@@ -91,6 +101,10 @@ class AppData extends ChangeNotifier {
   }
   List<Discount> get discounts => _discounts;
   Map<String, dynamic>? get userData => _userData;
+  List<FactureClient> get facturesClient => _facturesClient;
+  List<FactureFournisseur> get facturesFournisseur => _facturesFournisseur;
+  List<DeliveryNote> get deliveryNotes => _deliveryNotes;
+
   Supplier getSupplierById(int id) {
     return _suppliers.firstWhere((supplier) => supplier.id == id, orElse: () => Supplier.empty());
   }
@@ -539,10 +553,106 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  // Méthodes pour les factures clients
+  Future<void> fetchFacturesClient() async {
+    _facturesClient = await FactureClientController.getFactures();
+    notifyListeners();
+  }
+
+  FactureClient getFactureClientByOrderNum(String orderNum) {
+    return _facturesClient.firstWhere((facture) => facture.orderNum == orderNum); // Récupère la facture client correspondant à l 'id
+  }
+
+  Future<void> createFactureClient(FactureClient facture) async {
+    try {
+      final createdFacture = await FactureClientController.addFacture(facture);
+      _facturesClient.add(createdFacture);
+      print('Facture client créée !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteFactureClient( int id) async {
+    try {
+      await FactureClientController.deleteFacture(id);
+      _facturesClient.removeWhere((facture) =>
+      facture.id == id);
+      print('Facture client supprimée !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+
+  //Methodes pour factures fournisseurs
+  Future<void> fetchFacturesFournisseur() async {
+    _facturesFournisseur = await FactureSupplierController.getFactures();
+    notifyListeners();
+  }
+  FactureFournisseur getFactureFournisseurByOrderNum(String orderNum) {
+    return _facturesFournisseur.firstWhere((facture) => facture.orderNum == orderNum); // Récupère la facture fournisseur correspondant
+  }
+  Future<void> createFactureFournisseur(FactureFournisseur facture) async {
+    try {
+      final createdFacture = await FactureSupplierController.addFacture(facture);
+      _facturesFournisseur.add(createdFacture);
+      print('Facture fournisseur créée !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+  Future<void> deleteFactureFournisseur(int id) async {
+    try {
+      await FactureSupplierController.deleteFacture(id);
+      _facturesFournisseur.removeWhere((facture) => facture.id == id);
+      print('Facture fournisseur supprimée !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+
+// Methodes pour les bon de livraison
+  Future<void> fetchBonLivraison() async {
+    _deliveryNotes = await DeliveryNoteController.fetchDeliveryNotes();
+    notifyListeners();
+  }
+  DeliveryNote getDeliveryOrderByOrderNum(String orderNum) {
+    return _deliveryNotes.firstWhere((bon) => bon.orderNum == orderNum); // Récupère le bon de livraison correspondant
+  }
+  Future<void> createBonLivraison(DeliveryNote bon) async {
+    try {
+      final createdBon = await DeliveryNoteController.createDeliveryNote(bon);
+      _deliveryNotes.add(createdBon);
+      print('Bon de livraison créé !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+  Future<void> deleteDeliveryOrder(int id) async {
+    try {
+      await DeliveryNoteController.deleteDeliveryNote(id);
+      _deliveryNotes.removeWhere((bon) => bon.id == id);
+      print('Bon de livraison supprimé !');
+      notifyListeners();
+    } catch (e) {
+      print('Erreur: $e');
+      rethrow;
+    }
+  }
+
   // Méthodes pour les données utilisateur
   Future<void> fetchUserData() async {
     _userData = await UserController.fetchUserProfile();
-    print('Données utilisateur récupérées: $_userData');
     notifyListeners();
   }
 

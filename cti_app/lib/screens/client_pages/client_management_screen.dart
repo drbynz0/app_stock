@@ -37,7 +37,7 @@ class _ClientManagementScreenState extends State<ClientManagementScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        appData.refreshDataService(context);
+        appData.refreshData();
       }
     });
 

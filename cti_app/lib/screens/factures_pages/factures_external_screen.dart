@@ -1,9 +1,8 @@
-import 'package:cti_app/controller/external_orders_controller.dart';
-import 'package:cti_app/controller/facture_controller.dart';
-import 'package:cti_app/controller/supplier_controller.dart';
 import 'package:cti_app/models/supplier.dart';
+import 'package:cti_app/services/app_data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cti_app/models/external_order.dart';
+import 'package:provider/provider.dart';
 import '/models/factures.dart';
 import '../factures_pages/details_facture_external_screen.dart';
 
@@ -28,11 +27,11 @@ class FacturesExternalScreenState extends State<FacturesExternalScreen> {
     _refreshOption();
   }
 
-  // Méthode pour rafraîchir
   Future<void> _refreshOption() async {
-    final availableFactures = await FactureSupplierController.getFactures();
-    final availableExternalOrders = await ExternalOrdersController.fetchOrders();
-    final availableSuppliers = await SupplierController.getSuppliers();
+    final appData = Provider.of<AppData>(context, listen: false);
+    final availableFactures = appData.facturesFournisseur;
+    final availableExternalOrders = appData.externalOrders;
+    final availableSuppliers = appData.suppliers;
     setState(() {
       externalFactures = availableFactures;
       externalOrders = availableExternalOrders;

@@ -31,7 +31,11 @@ class _EmployeScreenState extends State<EmployeScreen> {
       setState(() => employees = data);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
+        SnackBar(
+          content: Text('Erreur: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
       );
     } finally {
       setState(() => isLoading = false);

@@ -1,12 +1,11 @@
-import 'dart:convert';
 
+import 'package:cti_app/controller/user_controller.dart';
 import 'package:cti_app/models/external_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/factures.dart';
 import '../models/supplier.dart';
 
@@ -18,8 +17,9 @@ class ExternalFactureService {
     required Supplier supplier,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final pdfBytes = await _generateFacturePdf(prefs.getString('user_data') ?? 'Inconnu', facture, supplier, externalOrder);
+      final updatedProfile = await UserController.fetchUserProfile();
+      final profile = updatedProfile;
+      final pdfBytes = await _generateFacturePdf(profile, facture, supplier, externalOrder);
       await Printing.layoutPdf(onLayout: (format) => pdfBytes);
     } catch (e) {
       // ignore: use_build_context_synchronously
@@ -32,8 +32,7 @@ class ExternalFactureService {
     }
   }
 
-  static Future<Uint8List> _generateFacturePdf(String userDataString, FactureFournisseur facture, Supplier supplier, ExternalOrder externalOrder) async {
-    final Map<String, dynamic> userData = jsonDecode(userDataString);
+  static Future<Uint8List> _generateFacturePdf(Map<String, dynamic> profile, FactureFournisseur facture, Supplier supplier, ExternalOrder externalOrder) async {
     final pdf = pw.Document();
     final logo = await _getLogoImage();
 
@@ -45,7 +44,7 @@ class ExternalFactureService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 0.5 * PdfPageFormat.cm, vertical: 0.5 * PdfPageFormat.cm),
-        header: (pw.Context context) => _buildHeaderSection(userData, logo, facture, supplier, context),
+        header: (pw.Context context) => _buildHeaderSection(profile, logo, facture, supplier, context),
         footer: (pw.Context context) => pw.Column(
           children: [
             pw.Row(
@@ -76,7 +75,7 @@ class ExternalFactureService {
     return pdf.save();
   }
 
-  static pw.Widget _buildHeaderSection(Map<String, dynamic> userData, pw.ImageProvider logo, FactureFournisseur facture, Supplier supplier, pw.Context context) {
+  static pw.Widget _buildHeaderSection(Map<String, dynamic> profile, pw.ImageProvider logo, FactureFournisseur facture, Supplier supplier, pw.Context context) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -89,7 +88,7 @@ class ExternalFactureService {
                 children: [
                   _buildHeader(logo),
                   pw.SizedBox(height: 30),
-                  _buildFollowedInfo(userData)
+                  _buildFollowedInfo(profile)
                 ],
               ),
             ),
@@ -137,7 +136,7 @@ class ExternalFactureService {
     );
   }
 
-  static pw.Widget _buildFollowedInfo(Map<String, dynamic> userData) {
+  static pw.Widget _buildFollowedInfo(Map<String, dynamic> profile) {
     
     return pw.Container(
       alignment: pw.Alignment.bottomLeft,
@@ -161,7 +160,7 @@ class ExternalFactureService {
               ),
               pw.Padding(
                 padding: const pw.EdgeInsets.all(3),
-                child: pw.Text(userData['username'].toUpperCase(), style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                child: pw.Text('${profile['firstname'].toUpperCase()} ${profile['lastname']}', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
               ),
             ],
           ),

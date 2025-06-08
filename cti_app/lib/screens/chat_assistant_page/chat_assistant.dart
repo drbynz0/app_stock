@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:cti_app/constants/app_constant.dart';
 import 'package:cti_app/theme/theme_provider.dart';
+import 'package:cti_app/widgets/typing_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -105,70 +106,132 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
     );
   }
 
-  Widget _buildBotMessage(Map<String, dynamic> content) {
-    final theme = Provider.of<ThemeProvider>(context);
-    
-    if (content.containsKey('error')) {
-      return Text(
-        content['error'],
-        style: const TextStyle(color: Colors.red),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Réponse humaine/explication
-        Text(content['human_response'] ?? ''),
-
-        // Section SQL si présente
-        if (content['has_sql'] == true && content['sql_data'] != null)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              const Text(
-                'Résultats de la requête:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              // Bouton copier la requête
-              OutlinedButton.icon(
-                icon: const Icon(Icons.content_copy, size: 16),
-                label: const Text('Copier la requête SQL'),
-                onPressed: () => _copyToClipboard(content['sql_data']['query']),
-              ),
-              const SizedBox(height: 8),
-              // Tableau des résultats
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: (content['sql_data']['columns'] as List<String>)
-                      .map((col) => DataColumn(label: Text(col)))
-                      .toList(),
-                  rows: (content['sql_data']['rows'] as List<List<dynamic>>)
-                      .take(5)
-                      .map((row) => DataRow(
-                        cells: row
-                            .map((cell) => DataCell(Text(cell.toString())))
-                            .toList(),
-                      ))
-                      .toList(),
-                ),
-              ),
-              if ((content['sql_data']['rows'] as List).length > 5)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    '... et ${(content['sql_data']['rows'] as List).length - 5} lignes supplémentaires',
-                    style: TextStyle(color: theme.secondaryTextColor),
-                  ),
-                ),
-            ],
-          ),
-      ],
+Widget _buildBotMessage(Map<String, dynamic> content) {
+  final theme = Provider.of<ThemeProvider>(context);
+  
+  if (content.containsKey('error')) {
+    return Text(
+      content['error'],
+      style: const TextStyle(color: Colors.red),
     );
   }
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Réponse humaine/explication
+      Text(content['human_response'] ?? ''),
+
+      // Section SQL si présente
+      if (content['has_sql'] == true && content['sql_data'] != null)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            // Bouton copier la requête
+            OutlinedButton.icon(
+              icon: const Icon(Icons.content_copy, size: 16),
+              label: const Text('Copier les résultats'),
+              onPressed: () => _copyQueryResults(content['sql_data']),
+            ),
+            const SizedBox(height: 8),
+            // Affichage des résultats sous forme de liste
+            ..._buildDataDisplay(content['sql_data'], theme),
+          ],
+        ),
+    ],
+  );
+}
+
+List<Widget> _buildDataDisplay(Map<String, dynamic> sqlData, ThemeProvider theme) {
+  final columns = sqlData['columns'] as List<String>;
+  final rows = sqlData['rows'] as List<List<dynamic>>;
+  
+  // Pour les requêtes simples (1 colonne)
+  if (columns.length == 1) {
+    return [
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 200),
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: rows.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                rows[index][0].toString(),
+                style: TextStyle(color: theme.textColor),
+              ),
+            );
+          },
+        ),
+      ),
+      Text(
+        '${rows.length} résultats',
+        style: TextStyle(color: theme.secondaryTextColor, fontSize: 12),
+      ),
+    ];
+  }
+  
+  // Pour les requêtes multi-colonnes
+  return [
+    SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        columns: columns.map((col) => DataColumn(label: Text(col))).toList(),
+        rows: rows.take(10).map((row) => DataRow(
+          cells: row.map((cell) => DataCell(Text(cell.toString()))).toList(),
+        )).toList(),
+      ),
+    ),
+    if (rows.length > 10)
+      Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          '... et ${rows.length - 10} lignes supplémentaires',
+          style: TextStyle(color: theme.secondaryTextColor),
+        ),
+      ),
+  ];
+}
+
+Future<void> _copyQueryResults(Map<String, dynamic> sqlData) async {
+  final columns = sqlData['columns'] as List<String>;
+  final rows = sqlData['rows'] as List<List<dynamic>>;
+  
+  String result = '${columns.join('\t')}\n';
+  for (var row in rows) {
+    result += '${row.map((cell) => cell.toString()).join('\t')}\n';
+  }
+  
+  await Clipboard.setData(ClipboardData(text: result));
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('${rows.length} résultats copiés')),
+  );
+}
+
+Future<void> _copyMessageText(dynamic message) async {
+  String textToCopy;
+  
+  if (message is String) {
+    // Message utilisateur simple
+    textToCopy = message;
+  } else if (message is Map<String, dynamic>) {
+    // Message du bot
+    if (message.containsKey('error')) {
+      textToCopy = message['error'];
+    } else {
+      textToCopy = message['human_response'] ?? '';
+      if (message['has_sql'] == true && message['sql_data'] != null) {
+        textToCopy += '\n\nRequête SQL:\n${message['sql_data']['query']}';
+      }
+    }
+  } else {
+    textToCopy = 'Impossible de copier ce message';
+  }
+
+  await _copyToClipboard(textToCopy);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -177,16 +240,6 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('CTI Assistant'),
-        actions: [
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(12.0),
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-        ],
       ),
       body: Column(
         children: [
@@ -202,7 +255,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.all(12.0),
-                      child: CircularProgressIndicator(),
+                      child:  TypingIndicator(),
                     ),
                   );
                 }
@@ -226,12 +279,27 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          isUser ? 'Vous' : 'CTI Assistant',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isUser ? Colors.white : theme.titleColor,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isUser ? 'Vous' : 'CTI Assistant',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isUser ? Colors.white : theme.titleColor,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.content_copy,
+                                size: 16,
+                                color: isUser ? Colors.white70 : theme.secondaryTextColor,
+                              ),
+                              onPressed: () => _copyMessageText(msg['message']),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         if (isUser)
@@ -257,14 +325,7 @@ class _ChatAssistantScreenState extends State<ChatAssistantScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Posez votre question commerciale...',
-                      border: InputBorder.none,
-                      suffixIcon: _isLoading
-                          ? const Padding(
-                              padding: EdgeInsets.all(12.0),
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : null,
+                      hintText: 'Envoyez ta demande...',
                     ),
                     onSubmitted: _sendMessage,
                     maxLines: null,
