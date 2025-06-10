@@ -39,7 +39,7 @@ class EditProductScreenState extends State<EditProductScreen> {
 
   late Category productCategory;
   late List<Category> categories;
-  Category _selectedCategory = Category.empty();
+  late Category _selectedCategory = Category.empty();
 
   late List<File?> _newImageFiles; 
   late List<String> _currentImageUrls;
@@ -53,13 +53,20 @@ class EditProductScreenState extends State<EditProductScreen> {
     _marqueController = TextEditingController(text: widget.product.marque);
     _priceController = TextEditingController(text: widget.product.price.toString());
     _stockController = TextEditingController(text: widget.product.stock.toString());
-    _categoryController = TextEditingController();
-    productCategory = Category.empty();
-    categories = [];
-
+    _categoryController = TextEditingController(text: widget.product.category.name);
+    
+    // Initialiser la catégorie sélectionnée avec celle du produit
+    productCategory = widget.product.category;
+    _selectedCategory = widget.product.category;
+    
     //initialiser les images actuelles
     _newImageFiles = List<File?>.filled(4, null); 
     _currentImageUrls = List.from(widget.product.images);
+
+    // Si le produit a une catégorie, mettre à jour le contrôleur
+    if (widget.product.category != Category.empty()) {
+      _categoryController.text = widget.product.category.name;
+    }
   }
 
   @override
@@ -67,8 +74,10 @@ class EditProductScreenState extends State<EditProductScreen> {
     super.didChangeDependencies();
     final appData = Provider.of<AppData>(context);
     categories = appData.categories;
-    productCategory = widget.product.category;
-    _categoryController.text = productCategory.name.toString();
+    // S'assurer que la catégorie du produit est dans la liste
+    if (!categories.contains(_selectedCategory)) {
+      categories.add(_selectedCategory);
+    }
   }
 
   @override
@@ -111,28 +120,27 @@ class EditProductScreenState extends State<EditProductScreen> {
     );
   }
 
- Widget _buildImageItem(int index) {
-  final theme = Provider.of<ThemeProvider>(context);
-  final hasNewImage = _newImageFiles[index] != null;
-  final hasCurrentImage = index < _currentImageUrls.length && _currentImageUrls[index].isNotEmpty;
+  Widget _buildImageItem(int index) {
+    final theme = Provider.of<ThemeProvider>(context);
+    final hasNewImage = _newImageFiles[index] != null;
+    final hasCurrentImage = index < _currentImageUrls.length && _currentImageUrls[index].isNotEmpty;
 
-  return GestureDetector(
-    onTap: () => _pickImage(index),
-    child: Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.borderColor),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (hasNewImage)
-            _buildImagePreview(_newImageFiles[index]!)
-          else if (hasCurrentImage)
-            _buildNetworkImage(index)
-          else
-            _buildPlaceholderIcon(),
-          if (hasCurrentImage && !hasNewImage)
+    return GestureDetector(
+      onTap: () => _pickImage(index),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: theme.borderColor),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasNewImage)
+              _buildImagePreview(_newImageFiles[index]!)
+            else if (hasCurrentImage)
+              _buildNetworkImage(index)
+            else
+              _buildPlaceholderIcon(),
             Positioned(
               top: 4,
               right: 4,
@@ -141,11 +149,11 @@ class EditProductScreenState extends State<EditProductScreen> {
                 onPressed: () => _removeImage(index),
               ),
             ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
 Widget _buildImagePreview(File file) {
   return ClipRRect(
@@ -197,22 +205,12 @@ void _submitForm() async {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    List<File> imagesToUpload = _handleImageUpdates();
-    
-    if (imagesToUpload.isEmpty && _currentImageUrls.isEmpty) {
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veuillez ajouter au moins une image'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return;
+    List<File> imagesToUpload = [];
+    for (var file in _newImageFiles) {
+      if (file != null) imagesToUpload.add(file);
     }
-
-    final updateProduct = Product(
+    
+    final updatedProduct = Product(
       id: widget.product.id,
       name: _nameController.text.trim(),
       variants: int.parse(_variantController.text),
@@ -230,42 +228,30 @@ void _submitForm() async {
       updatedAt: DateTime.now(),
     );
 
-        final appData = Provider.of<AppData>(context, listen: false);
-        final updatedProduct = await appData.updateProduct(updateProduct, imagesToUpload);
+    final appData = Provider.of<AppData>(context, listen: false);
+    final resultProduct = await appData.updateProduct(updatedProduct, imagesToUpload);
     
     if (mounted) {
+      widget.onProductUpdated(resultProduct);
       Navigator.pop(context);
-      widget.onProductUpdated(updatedProduct);
       Provider.of<ActivityService>(context, listen: false).addActivity(
-        "Modification du produit : ${updatedProduct.name}",
+        "Modification du produit : ${resultProduct.name}",
         'edit',
       );
     }
-  } catch (e) {
+  } catch (e, s) {
     if (mounted) {
       Navigator.pop(context);
-      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la mise à jour: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      print('$e , $s');
     }
   }
 }
-
-  List<File> _handleImageUpdates() {
-    final List<File> resultImages = [];
-    
-    // 1. Ajouter les nouvelles images sélectionnées
-    for (var file in _newImageFiles) {
-      if (file != null) {
-        resultImages.add(file);
-      }
-    }
-    
-    // 2. Vérifier que nous avons au moins une image
-    if (resultImages.isEmpty && _currentImageUrls.isEmpty) {
-      return [];
-    }
-    
-    return resultImages;
-  }
 
   @override
   Widget build(BuildContext context) {

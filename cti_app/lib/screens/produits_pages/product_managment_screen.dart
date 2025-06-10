@@ -473,7 +473,7 @@ void dispose() {
                 duration: const Duration(seconds: 3),
               ),
             );
-            
+            Navigator.pop(context);
             Provider.of<ActivityService>(context, listen: false)
               .addActivity("Modification produit: ${updatedProduct.name}", 'edit');
           }

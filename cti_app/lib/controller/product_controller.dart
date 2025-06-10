@@ -112,6 +112,7 @@ class ProductController {
       'PUT',
       Uri.parse('${_baseUrl}update/${product.id}/'),
     );
+    
     // Champs texte
     request.fields['name'] = product.name;
     request.fields['code'] = product.code;
@@ -122,22 +123,24 @@ class ProductController {
     request.fields['description'] = product.description ?? 'Aucune description';
     request.fields['on_promo'] = product.onPromo.toString();
     request.fields['category_id'] = product.category.id.toString();
+    
     if (product.promoPrice != null) {
       request.fields['promo_price'] = product.promoPrice.toString();
     }
-    List<String> relativePaths = product.images.map(extractRelativePath).toList();
-    // Envoyez les URLs des images existantes sous forme de JSON
+    
+    // Envoyez les URLs des images existantes
     if (product.images.isNotEmpty) {
-      request.fields['images'] = jsonEncode(relativePaths);
+      request.fields['existing_images'] = jsonEncode(product.images);
     }
-    // Images
+    
+    // Ajouter les nouvelles images
     for (var image in images) {
       var file = await http.MultipartFile.fromPath('images', image.path);
       request.files.add(file);
     }
+    
     request.headers.addAll(await ApiService.headers());
     
-    // Envoi
     var response = await request.send();
     var responseData = await response.stream.bytesToString();
 
