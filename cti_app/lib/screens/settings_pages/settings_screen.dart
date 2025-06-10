@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:cti_app/screens/pin_code_screen.dart';
+import 'pin_code_screen.dart';
 import 'package:cti_app/screens/settings_pages/about_section.dart';
 import 'package:cti_app/screens/settings_pages/profile_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

@@ -49,6 +49,10 @@ class AppData extends ChangeNotifier {
   List<FactureFournisseur> _facturesFournisseur = [];
   List<DeliveryNote> _deliveryNotes = [];
 
+  bool _isLoading = false;
+  
+  bool get isLoading => _isLoading;
+
 
 
   AppData() {
@@ -56,6 +60,8 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> _loadInitialData() async {
+    _setLoading(true);
+    try {
     _userData = await UserController.fetchUserProfile();
     _clients = await CustomerController.getCustomers();
     _products = await ProductController.fetchProducts();
@@ -70,6 +76,11 @@ class AppData extends ChangeNotifier {
     _facturesFournisseur = await FactureSupplierController.getFactures();
     _deliveryNotes = await DeliveryNoteController.fetchDeliveryNotes();
     notifyListeners();
+    } catch (e) {
+      print(e);
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<void> refreshDataService(BuildContext context) async {
@@ -83,6 +94,11 @@ class AppData extends ChangeNotifier {
     await context.read<DiscountService>().fetchDiscounts();
     await context.read<ProfileService>().fetchUserProfile();
     notifyListeners();
+  }
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners(); // Important pour notifier les écouteurs du changement
   }
 
   // Getters

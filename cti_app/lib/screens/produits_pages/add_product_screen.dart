@@ -200,6 +200,7 @@ class AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
     return Dialog(
+      backgroundColor: theme.dialogColor,
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),

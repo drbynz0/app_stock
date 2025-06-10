@@ -37,16 +37,15 @@ class AboutSection extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.apps,
-                  size: 60,
-                  color: theme.colorScheme.primary,
-                ),
+                child: Image.asset(
+                  'assets/image/icon_app.jpg',
+                  fit: BoxFit.cover,
+                  ),
+                )
               ),
-            ),
             const SizedBox(height: 24),
             Text(
-              'Mon Application',
+              'CTI App',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -67,13 +66,13 @@ class AboutSection extends StatelessWidget {
               items: [
                 _buildInfoItem(
                   icon: Icons.code,
-                  label: 'Développeur',
-                  description: 'Votre Société',
+                  label: 'Développeurs',
+                  description: 'NIZAR SOILIHI / SOUMYA MOUJANE',
                 ),
                 _buildInfoItem(
                   icon: Icons.update,
                   label: 'Dernière mise à jour',
-                  description: '15/06/2023',
+                  description: '02/06/2025',
                 ),
               ],
             ),

@@ -111,40 +111,54 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
     );
   }
   Widget _buildKeyboard() {
-    return Column(
-      children: [
-        for (var row in [
-          ['1', '2', '3'],
-          ['4', '5', '6'],
-          ['7', '8', '9'],
-        ])
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: row
-                .map((digit) => _buildKeyboardButton(digit, onPressed: () => _addDigit(digit)))
-                .toList(),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            TextButton(
-              onPressed: _cancel,
-              child: const Text(
-                "Annuler",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF004A99),
+    return SizedBox(
+      height: 350, // Ajuste la hauteur selon tes besoins
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              for (var row in [
+                ['1', '2', '3'],
+                ['4', '5', '6'],
+                ['7', '8', '9'],
+              ])
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: row
+                      .map((digit) => _buildKeyboardButton(digit, onPressed: () => _addDigit(digit)))
+                      .toList(),
                 ),
-              ),
+              const SizedBox(height: 70), // Laisse de la place pour le Row positionné
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 40,
+            bottom: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                TextButton(
+                  onPressed: _cancel,
+                  child: Text(
+                    "Annuler",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF004A99),
+                    ),
+                  ),
+                ),
+                _buildKeyboardButton("0", onPressed: () => _addDigit("0")),
+                IconButton(
+                  onPressed: _deleteDigit,
+                  icon: const Icon(Icons.backspace, color: Color(0xFF004A99)),
+                  iconSize: 28,
+                ),
+              ],
             ),
-            _buildKeyboardButton("0", onPressed: () => _addDigit("0")),
-            IconButton(
-              onPressed: _deleteDigit,
-              icon: const Icon(Icons.backspace, color: Color(0xFF004A99)),
-            ),
-          ],
-        )
-      ],
+          ),
+        ],
+      ),
     );
   }
 

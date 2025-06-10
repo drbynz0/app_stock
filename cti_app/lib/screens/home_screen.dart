@@ -1,5 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:cti_app/controller/login_controller.dart';
 import 'package:cti_app/screens/chat_assistant_page/chat_assistant.dart';
 import 'package:cti_app/screens/historical_pages/historical_page.dart';
@@ -77,12 +77,52 @@ class HomeScreenState extends State<HomeScreen> {
       builder: (context, appData, child) {
         userData = appData.userData;
         if (userData == null) {
-          return Center(child: CircularProgressIndicator());
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SpinKitFadingCircle(
+                  color: Theme.of(context).primaryColor,
+                  size: 50.0,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Chargement des données...',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          );
         }
           
         final theme = Provider.of<ThemeProvider>(context);
         internalOrders = appData.internalOrders;
         externalOrders = appData.externalOrders;
+        // Vérification si les données sont en cours de chargement
+        if (appData.isLoading) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SpinKitDoubleBounce(
+                  color: theme.textColor,
+                  size: 50.0,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Mise à jour des données...',
+                  style: TextStyle(
+                    color: theme.textColor,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
         final int totalExternalOrders = appData.externalOrders.length;
         final int totalSuppliers = appData.suppliers.length;
         final int totalClients = appData.clients.length;

@@ -26,7 +26,7 @@ Future<void> showAddCategorieDialog(
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: theme.backgroundColor,
+          color: theme.dialogColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Form(

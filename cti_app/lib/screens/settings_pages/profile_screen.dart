@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(icon, color: Colors.blue.shade700),
+            Icon(icon),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
