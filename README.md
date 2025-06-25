@@ -102,12 +102,4 @@ app_stock/
     └── activities/             # Gestion des activités
 ```
 
-## Contribuer
-Nous accueillons les contributions de la communauté ! Pour contribuer, veuillez suivre ces étapes :
-1. Forkez le projet.
-2. Créez une nouvelle branche (`git checkout -b feature/YourFeature`).
-3. Apportez vos modifications et validez-les (`git commit -m 'Ajout d'une nouvelle fonctionnalité'`).
-4. Poussez votre branche (`git push origin feature/YourFeature`).
-5. Ouvrez une Pull Request.
-
 Nous vous remercions de votre intérêt pour le projet et sommes impatients de voir vos contributions !
