@@ -41,13 +41,11 @@ class ThemeProvider with ChangeNotifier {
       textTheme: TextTheme(
         bodyLarge: TextStyle(color: textColor),
         bodyMedium: TextStyle(color: textColor),
-        // Ajoutez d'autres styles de texte si nécessaire
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
       ),
-      // Autres personnalisations
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         secondary: buttonColor,
@@ -93,7 +91,6 @@ class ThemeProvider with ChangeNotifier {
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
       ),
-      // Autres personnalisations
       colorScheme: ColorScheme.dark(
         primary: primaryColor,
         secondary: buttonColor,

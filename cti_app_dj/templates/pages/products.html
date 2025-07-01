@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Produits - TechShop</title>
+    <link rel="stylesheet" href="/static/assets/css/products.css">
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Barre de navigation (identique à l'accueil pour la cohérence) -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>Tech<span>Shop</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/templates/index.html">Accueil</a></li>
+                    <li><a href="#" class="active">Produits</a></li>
+                    <li><a href="#">Promotions</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Bannière de la page produit -->
+    <section class="page-banner">
+        <div class="container">
+            <h2>Nos Produits</h2>
+            <p>Découvrez notre sélection exclusive</p>
+        </div>
+    </section>
+
+    <!-- Filtres et tri -->
+    <section class="product-filters">
+        <div class="container">
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="category">Catégorie :</label>
+                    <select id="category">
+                        <option value="all">Toutes les catégories</option>
+                        <option value="smartphones">Smartphones</option>
+                        <option value="computers">Ordinateurs</option>
+                        <option value="accessories">Accessoires</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="sort">Trier par :</label>
+                    <select id="sort">
+                        <option value="popular">Populaire</option>
+                        <option value="newest">Nouveautés</option>
+                        <option value="price-low">Prix croissant</option>
+                        <option value="price-high">Prix décroissant</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="price-range">Prix :</label>
+                    <input type="range" id="price-range" min="0" max="1000" value="1000">
+                    <span id="price-value">Jusqu'à €1000</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Liste des produits -->
+    <section class="product-listing">
+        <div class="container">
+            <div class="product-grid">
+                <!-- Produit 1 -->
+                <div class="product-card">
+                    <div class="product-badge">Nouveau</div>
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Smartphone haut de gamme">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Smartphone X9 Pro</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span>(24)</span>
+                            </span>
+                        </div>
+                        <div class="price">€599.99 <span class="old-price">€699.99</span></div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+
+                <!-- Produit 2 -->
+                <div class="product-card">
+                    <div class="product-badge hot">Promo</div>
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Ordinateur portable">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Ordinateur Ultra Slim</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <span>(18)</span>
+                            </span>
+                        </div>
+                        <div class="price">€899.99 <span class="old-price">€999.99</span></div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+
+                <!-- Produit 3 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Écouteurs sans fil">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Écouteurs Sans Fil Pro</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span>(42)</span>
+                            </span>
+                        </div>
+                        <div class="price">€129.99</div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+
+                <!-- Produit 4 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Montre connectée">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Montre Connectée 2.0</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <span>(15)</span>
+                            </span>
+                        </div>
+                        <div class="price">€249.99</div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+
+                <!-- Produit 5 -->
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Tablette tactile">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Tablette Pro 10"</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <i class="far fa-star"></i>
+                                <span>(8)</span>
+                            </span>
+                        </div>
+                        <div class="price">€349.99</div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+
+                <!-- Produit 6 -->
+                <div class="product-card">
+                    <div class="product-badge">-20%</div>
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1527814050087-3793815479db?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Souris gaming">
+                        <div class="quick-view">Voir détails</div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Souris Gaming Pro</h3>
+                        <div class="product-meta">
+                            <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span>(36)</span>
+                            </span>
+                        </div>
+                        <div class="price">€79.99 <span class="old-price">€99.99</span></div>
+                        <button class="add-to-cart">Ajouter au panier</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <a href="#" class="page-nav disabled"><i class="fas fa-chevron-left"></i></a>
+                <a href="#" class="page-number active">1</a>
+                <a href="#" class="page-number">2</a>
+                <a href="#" class="page-number">3</a>
+                <a href="#" class="page-nav"><i class="fas fa-chevron-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-column">
+                <h3>À propos</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Notre histoire</a></li>
+                    <li><a href="#">Nos valeurs</a></li>
+                    <li><a href="#">Carrières</a></li>
+                    <li><a href="#">Presse</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Service Client</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Contactez-nous</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Livraison & Retours</a></li>
+                    <li><a href="#">Guide des tailles</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Informations Légales</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Conditions Générales</a></li>
+                    <li><a href="#">Politique de confidentialité</a></li>
+                    <li><a href="#">Cookies</a></li>
+                    <li><a href="#">Mentions légales</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>Suivez-nous</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Pinterest</a></li>
+                    <li><a href="#">Twitter</a></li>
+                </ul>
+                <div class="social-icons">
+                    <a href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2023 LUXEBOUTIQUE. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+<script src="/static/assets/js/script.js"></script>
+</body>
+</html>
