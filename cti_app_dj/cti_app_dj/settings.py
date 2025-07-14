@@ -15,11 +15,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-# Charge les variables d'environnement
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Charge les variables d'environnement
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, 'var.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -86,6 +86,7 @@ REST_FRAMEWORK = {
 
 
 MIDDLEWARE = [
+    'django.middleware.csrf.CsrfViewMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
